@@ -11,7 +11,7 @@ void EWatchControl_Transition(EWatchControl *this, enum EWatchControlState state
 	this->state = state;
 }
 
-void EWatchControl_Dispatch(EWatchControl *this, enum EWatchControlSignal sig)
+void EWatchControl_Dispatch(EWatchControl *this, unsigned int sig)
 {
 	switch(this->state) {
 	case CLOCK_STATE:

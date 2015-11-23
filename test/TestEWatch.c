@@ -127,7 +127,18 @@ void test_SwitchToAlarmModeWhenSignalIsReceived(void)
 	EWatch_Dispatch(&watch, SET_ALARM_MODE);
 	EWatch_Dispatch(&watch, CLOCK_TICK);
 	
-	TEST_ASSERT_EQUAL(CLOCK_MODE, previous);
-	TEST_ASSERT_EQUAL(ALARM_MODE, EWatch_GetMode(&watch));
+	TEST_ASSERT_EQUAL_MESSAGE(CLOCK_MODE, previous, "Should be CLOCK_MODE");     
 	TEST_ASSERT_EQUAL(1, EWatch_GetTenths(&watch));
+	TEST_ASSERT_EQUAL_MESSAGE(ALARM_MODE, EWatch_GetMode(&watch), "Should be ALARM_MODE");
+}
+
+void test_SameSignalGoesIntoTwoHIerarchicalMachines(void)
+{
+  	EWatch_Dispatch(&watch, SET_CLOCK_MODE);
+	EWatch_Dispatch(&watch, CLOCK_TICK);
+	EWatch_Dispatch(&watch, SET_ALARM_MODE);
+	EWatch_Dispatch(&watch, CLOCK_TICK);
+
+	TEST_ASSERT_EQUAL(2, EWatch_GetTenths(&watch));
+	TEST_ASSERT_EQUAL(ALARM_MODE, EWatch_GetMode(&watch));
 }

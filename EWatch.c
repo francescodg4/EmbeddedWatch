@@ -70,7 +70,7 @@ void EWatch_Init(EWatch *this)
 void EWatch_Dispatch(EWatch *this, unsigned int sig)
 {
 	Clock_Dispatch(this, sig);
-	EWatchControl_Dispatch(&this->control, sig);		
+	EWatchControl_Dispatch(&this->control, sig);
 }
 
 int EWatch_GetHours(EWatch *this)
