@@ -1,7 +1,7 @@
 #ifndef EWATCHCONTROL_H
 #define EWATHCCONTROL_H
 
-enum EWatchControlSignal {SET_ALARM_MODE, SET_CLOCK_MODE};
+enum EWatchControlSignal {SET_ALARM_MODE = 1, SET_CLOCK_MODE};
 enum EWatchMode {CLOCK_MODE, ALARM_MODE};
 enum EWatchControlState {CLOCK_STATE, ALARM_STATE};
 
@@ -12,7 +12,7 @@ typedef struct {
 
 void EWatchControl_Init(EWatchControl *this);
 void EWatchControl_Transition(EWatchControl *this, enum EWatchControlState state);
-void EWatchControl_Dispatch(EWatchControl *this, enum EWatchControlSignal sig);
+void EWatchControl_Dispatch(EWatchControl *this, unsigned int sig);
 enum EWatchMode EWatchControl_GetMode(EWatchControl *this);
 
 #endif /* EWATCHCONTROL_H */

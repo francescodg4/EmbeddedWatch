@@ -8,8 +8,9 @@ extern const int TENTHS_IN_HOUR;
 extern const int TENTHS_IN_MINUTE;
 extern const int TENTHS_IN_SECOND;
 
-// enum EWatchSignal {CLOCK_TICK, SET_ALARM_MODE, SET_CLOCK_MODE};
 enum EWatchSignal {CLOCK_TICK};
+// enum EWatchSignal {CLOCK_TICK};
+// enum EWatchControlSignal {SET_ALARM_MODE = 3, SET_CLOCK_MODE};
 // enum EWatchMode {CLOCK_MODE, ALARM_MODE};
 // enum EWatchState {CLOCK_STATE, ALARM_STATE};
 
