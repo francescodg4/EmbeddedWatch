@@ -22,4 +22,5 @@ PHONY: clean
 
 clean:
 	rm -f *.o
-	rm $(TARGET)
+	rm -f $(TARGET)
+	rm -f *_Runner.c

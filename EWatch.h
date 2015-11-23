@@ -1,7 +1,10 @@
 #ifndef EWATCH_H
 #define EWATCH_H
 
-#define TENTHS_IN_DAY 864000
+extern const int TENTHS_IN_DAY;
+extern const int TENTHS_IN_HOUR;
+extern const int TENTHS_IN_MINUTE;
+extern const int TENTHS_IN_SECOND;
 
 enum EWatchSignal {CLOCK_TICK};
 
