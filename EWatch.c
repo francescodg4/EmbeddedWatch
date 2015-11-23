@@ -2,7 +2,12 @@
 
 void EWatch_Init(EWatch *this) 
 {
-	return;
+	this->counter = 0;
+}
+
+void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
+{
+	this->counter++;
 }
 
 int EWatch_GetHours(EWatch *this)
@@ -12,18 +17,18 @@ int EWatch_GetHours(EWatch *this)
 
 int EWatch_GetMinutes(EWatch *this)
 {
-	return 0;
+	return this->counter / 600;
 }
 
 
 int EWatch_GetSeconds(EWatch *this)
 {
-	return 0;
+	return (this->counter / 10) % 60;
 }
 
 int EWatch_GetTenths(EWatch *this)
 {
-	return 0;
+	return this->counter % 10;
 }
 
 /* #include <stdio.h> */

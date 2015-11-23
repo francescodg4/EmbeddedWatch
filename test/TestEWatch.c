@@ -1,6 +1,13 @@
 #include "unity.h"
 #include "../EWatch.h"
 
+static EWatch watch;
+
+void setUp(void)
+{
+	EWatch_Init(&watch);
+}
+
 void test_StartWatchWithInitialState(void)
 {
 	EWatch watch;
@@ -15,17 +22,28 @@ void test_StartWatchWithInitialState(void)
 
 void test_SendClockTickSignalToWatch(void)
 {
-	TEST_IGNORE();
+	EWatch_Dispatch(&watch, CLOCK_TICK);
+	TEST_ASSERT_EQUAL(1, EWatch_GetTenths(&watch));
 }
 
 void test_TickOneSecondWhenTenthsArePassed(void)
 {
-	TEST_IGNORE();
+	int i;
+	for (i = 0; i < 10; i++)
+		EWatch_Dispatch(&watch, CLOCK_TICK);
+
+	TEST_ASSERT_EQUAL(0, EWatch_GetTenths(&watch));
+	TEST_ASSERT_EQUAL(1, EWatch_GetSeconds(&watch));
 }
 
 void test_TickOneMinuteWhenSecondsArePassed(void)
 {
-	TEST_IGNORE();
+	int i;
+	for (i = 0; i < 60 * 10; i++)
+		EWatch_Dispatch(&watch, CLOCK_TICK);
+
+	TEST_ASSERT_EQUAL(0, EWatch_GetSeconds(&watch));
+	TEST_ASSERT_EQUAL(1, EWatch_GetMinutes(&watch));
 }
 
 void test_TickOneHourWhenMinutesArePassed(void)

@@ -1,2 +1,4 @@
 test/unity/
 test/*_Runner.c
+*.o
+test
