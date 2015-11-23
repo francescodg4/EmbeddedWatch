@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -g
 TARGET = test
 
-test: EWatch.o TestEWatch.o TestEWatch_Runner.o
+test: EWatch.o TestEWatch.o TestEWatch_Runner.o EWatchControl.o
 	$(CC) -o $(TARGET) $^ -Lunity -lunity
 	./$@
 
@@ -16,6 +16,9 @@ TestEWatch.o: TestEWatch.c
 	$(CC) -c $^ -Iunity
 
 EWatch.o: ../EWatch.c
+	$(CC) -c $^
+
+EWatchControl.o: ../EWatchControl.c
 	$(CC) -c $^
 
 PHONY: clean
