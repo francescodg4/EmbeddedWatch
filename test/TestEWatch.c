@@ -48,11 +48,26 @@ void test_TickOneMinuteWhenSecondsArePassed(void)
 
 void test_TickOneHourWhenMinutesArePassed(void)
 {
-	TEST_IGNORE();
+	int i;
+	for (i = 0; i < 60 * 60 * 10; i++)
+		EWatch_Dispatch(&watch, CLOCK_TICK);
+
+	TEST_ASSERT_EQUAL(0, EWatch_GetMinutes(&watch));
+	TEST_ASSERT_EQUAL(1, EWatch_GetHours(&watch));
 }
 
 void test_ResetWhenADayIsPassed(void)
 {
-	TEST_IGNORE();
+	int day = 24 * 60 * 60 * 10;
+	
+	int i;
+	for (i = 0; i < day; i++)
+		EWatch_Dispatch(&watch, CLOCK_TICK);
+	
+	TEST_ASSERT_EQUAL(0, EWatch_GetTenths(&watch));
+	TEST_ASSERT_EQUAL(0, EWatch_GetSeconds(&watch));
+	TEST_ASSERT_EQUAL(0, EWatch_GetMinutes(&watch));
+	TEST_ASSERT_EQUAL(0, EWatch_GetHours(&watch));
+	
 }
 

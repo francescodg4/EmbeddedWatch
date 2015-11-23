@@ -12,12 +12,12 @@ void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 
 int EWatch_GetHours(EWatch *this)
 {
-	return 0;
+	return (this->counter / 36000) % 24;
 }
 
 int EWatch_GetMinutes(EWatch *this)
 {
-	return this->counter / 600;
+	return (this->counter / 600) % 60;
 }
 
 
