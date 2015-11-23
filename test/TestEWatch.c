@@ -67,7 +67,14 @@ void test_ResetWhenADayIsPassed(void)
 	TEST_ASSERT_EQUAL(0, EWatch_GetTenths(&watch));
 	TEST_ASSERT_EQUAL(0, EWatch_GetSeconds(&watch));
 	TEST_ASSERT_EQUAL(0, EWatch_GetMinutes(&watch));
-	TEST_ASSERT_EQUAL(0, EWatch_GetHours(&watch));
-	
+	TEST_ASSERT_EQUAL(0, EWatch_GetHours(&watch));	
 }
 
+void test_CountShouldNotBeMoreThanDayLength(void)
+{
+	int i;
+	for (i = 0; i < TENTHS_IN_DAY; i++)
+		EWatch_Dispatch(&watch, CLOCK_TICK);
+
+	TEST_ASSERT_EQUAL(0, watch.counter);
+}

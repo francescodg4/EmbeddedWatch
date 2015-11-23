@@ -1,6 +1,8 @@
 #ifndef EWATCH_H
 #define EWATCH_H
 
+#define TENTHS_IN_DAY 864000
+
 enum EWatchSignal {CLOCK_TICK};
 
 typedef struct {

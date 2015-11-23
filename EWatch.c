@@ -1,8 +1,8 @@
 #include "EWatch.h"
 
-#define TENTHS_TO_HOURS 36000
-#define TENTHS_TO_MINUTES 600
-#define TENTHS_TO_SECONDS 10
+#define TENTHS_IN_HOURS 36000
+#define TENTHS_IN_MINUTES 600
+#define TENTHS_IN_SECONDS 10
 
 void EWatch_Init(EWatch *this) 
 {
@@ -11,23 +11,23 @@ void EWatch_Init(EWatch *this)
 
 void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 {
-	this->counter++;
+	this->counter = (this->counter + 1) % TENTHS_IN_DAY;
 }
 
 int EWatch_GetHours(EWatch *this)
 {
-	return (this->counter / TENTHS_TO_HOURS) % 24;
+	return (this->counter / TENTHS_IN_HOURS) % 24;
 }
 
 int EWatch_GetMinutes(EWatch *this)
 {
-	return (this->counter / TENTHS_TO_MINUTES) % 60;
+	return (this->counter / TENTHS_IN_MINUTES) % 60;
 }
 
 
 int EWatch_GetSeconds(EWatch *this)
 {
-	return (this->counter / TENTHS_TO_SECONDS) % 60;
+	return (this->counter / TENTHS_IN_SECONDS) % 60;
 }
 
 int EWatch_GetTenths(EWatch *this)
