@@ -119,3 +119,15 @@ void test_CountToDayLimit(void)
 	TEST_ASSERT_EQUAL(59, EWatch_GetSeconds(&watch));
 	TEST_ASSERT_EQUAL(9, EWatch_GetTenths(&watch));
 }
+
+void test_SwitchToAlarmModeWhenSignalIsReceived(void)
+{
+	enum EWatchMode previous = EWatch_GetMode(&watch);
+
+	EWatch_Dispatch(&watch, SET_ALARM_MODE);
+	EWatch_Dispatch(&watch, CLOCK_TICK);
+	
+	TEST_ASSERT_EQUAL(CLOCK_MODE, previous);
+	TEST_ASSERT_EQUAL(ALARM_MODE, EWatch_GetMode(&watch));
+	TEST_ASSERT_EQUAL(1, EWatch_GetTenths(&watch));
+}

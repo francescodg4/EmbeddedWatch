@@ -5,14 +5,72 @@ const int TENTHS_IN_HOUR = 36000;
 const int TENTHS_IN_MINUTE = 600;
 const int TENTHS_IN_SECOND = 10;
 
-void EWatch_Init(EWatch *this) 
+static void Clock_Init(EWatch *this)
 {
 	this->counter = 0;
 }
 
+static void Clock_Dispatch(EWatch *this, enum EWatchSignal sig)
+{
+	if (sig == CLOCK_TICK)
+		this->counter = (this->counter + 1) % TENTHS_IN_DAY;
+}
+
+static void Control_Init(EWatch *this)
+{
+	this->state = CLOCK_STATE;
+	this->mode = CLOCK_MODE;
+}
+
+static void Control_Transition(EWatch *this, enum EWatchState state)
+{
+	this->state = state;
+}
+
+static void Control_Dispatch(EWatch *this, enum EWatchSignal sig)
+{
+	switch(this->state) {
+	case CLOCK_STATE:
+		switch(sig) {
+		case SET_ALARM_MODE:
+			Control_Transition(this, ALARM_STATE);
+			this->mode = ALARM_MODE;
+			break;
+		case SET_CLOCK_MODE:
+			Control_Transition(this, CLOCK_STATE);
+			this->mode = CLOCK_MODE;
+			break;
+		default:
+			break;
+		}
+		break;
+
+	case ALARM_STATE:
+		switch(sig) {
+		case SET_ALARM_MODE:
+			break;
+		case SET_CLOCK_MODE:
+			Control_Transition(this, CLOCK_STATE);
+			this->mode = CLOCK_MODE;
+			break;
+		default:
+			break;
+		}
+
+		break;
+	}
+}
+
+void EWatch_Init(EWatch *this) 
+{
+	Clock_Init(this);
+	Control_Init(this);
+}
+
 void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 {
-	this->counter = (this->counter + 1) % TENTHS_IN_DAY;
+	Clock_Dispatch(this, sig);
+	Control_Dispatch(this, sig);		
 }
 
 int EWatch_GetHours(EWatch *this)
@@ -34,4 +92,9 @@ int EWatch_GetSeconds(EWatch *this)
 int EWatch_GetTenths(EWatch *this)
 {
 	return this->counter % 10;
+}
+
+enum EWatchMode EWatch_GetMode(EWatch *this)
+{
+	return this->mode;
 }
