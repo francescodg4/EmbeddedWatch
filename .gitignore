@@ -1,4 +1,4 @@
-test/unity/
-test/*_Runner.c
 *.o
-test
+test/*
+!test/*.[c,h]
+test/*_Runner.c
