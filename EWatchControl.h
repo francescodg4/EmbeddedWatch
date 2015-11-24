@@ -12,7 +12,7 @@ typedef struct {
 
 void EWatchControl_Init(EWatchControl *this);
 void EWatchControl_Transition(EWatchControl *this, enum EWatchControlState state);
-void EWatchControl_Dispatch(EWatchControl *this, unsigned int sig);
+void EWatchControl_Dispatch(EWatchControl *this, enum EWatchControlSignal sig);
 enum EWatchMode EWatchControl_GetMode(EWatchControl *this);
 
 #endif /* EWATCHCONTROL_H */

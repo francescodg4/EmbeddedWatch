@@ -89,7 +89,7 @@ void test_CountShouldNotBeMoreThanDayLength(void)
 	for (i = 0; i < TENTHS_IN_DAY; i++)
 		EWatch_Dispatch(&watch, CLOCK_UPDATE);
 
-	TEST_ASSERT_EQUAL(0, watch.counter);
+	TEST_ASSERT_EQUAL(0, watch.clock.counter);
 }
 
 void test_CountTo3Hours20MinutesAnd30Seconds(void)
@@ -114,7 +114,7 @@ void test_CountToDayLimit(void)
 	for (i = 0; i < ticks; i++)
 		EWatch_Dispatch(&watch, CLOCK_UPDATE);
 
-	TEST_ASSERT_EQUAL(TENTHS_IN_DAY - 1, watch.counter);
+	TEST_ASSERT_EQUAL(TENTHS_IN_DAY - 1, watch.clock.counter);
 	TEST_ASSERT_EQUAL(23, EWatch_GetHours(&watch));
 	TEST_ASSERT_EQUAL(59, EWatch_GetMinutes(&watch));
 	TEST_ASSERT_EQUAL(59, EWatch_GetSeconds(&watch));
