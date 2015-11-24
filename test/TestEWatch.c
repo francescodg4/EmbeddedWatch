@@ -61,6 +61,22 @@ void test_SwitchToStopwatchMode(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:1 0:0:0 0", out);
 }
 
+void test_InStopwatchModeCheckIfStopwatchIsWorking(void)
+{
+	int ticks = convertToTicks(0, 0, 2, 9);
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
+
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
+
+	int i;
+	for (i = 0; i < ticks; i++)
+		EWatch_Dispatch(&watch, EW_CLOCK_TICK);
+
+	output(&watch);
+
+	TEST_ASSERT_EQUAL_STRING("Mode:1 0:0:2 9", out);
+}
+
 /* void test_SignalsShouldNotBeEqual(void) */
 /* { */
 /* 	const char *message = "CLOCK_TICK != SET_CLOCK_MODE"; */
