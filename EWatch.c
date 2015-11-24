@@ -71,7 +71,7 @@ void stopwatchState(EWatch *this, enum EWatchSignal sig)
 		break;
 
 	case EW_CLOCK_TICK_SIG:
-		EWatchStopwatch_Dispatch(&this->stopwatch, ST_CLOCK_TICK_SIG);
+//		EWatchStopwatch_Dispatch(&this->stopwatch, ST_CLOCK_TICK_SIG);
 		stopwatchOutput(this);
 		break;
 
@@ -99,8 +99,10 @@ void EWatch_Init(EWatch *this)
 void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 {
 	/* Update concurrent time */
-	if (sig == EW_CLOCK_TICK_SIG)
+	if (sig == EW_CLOCK_TICK_SIG) {
 		EWatchClock_Dispatch(&this->clock, CLOCK_TICK);
+ 		EWatchStopwatch_Dispatch(&this->stopwatch, ST_CLOCK_TICK_SIG);
+	}
 
 	switch (this->state) {
 

@@ -64,8 +64,8 @@ void test_SwitchToStopwatchMode(void)
 void test_InStopwatchModeCheckIfStopwatchIsWorking(void)
 {
 	int ticks = convertToTicks(0, 0, 2, 9);
-	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
 
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 
 	int i;
@@ -110,6 +110,26 @@ void test_TimeIsRunningEvenIfWeAreInStopwatchMode(void)
 	
 	TEST_ASSERT_EQUAL_STRING("Mode:1 0:0:20 0", stopwatchOutput);
 	TEST_ASSERT_EQUAL_STRING("Mode:0 12:15:50 1", clockOutput);
+}
+
+void test_StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)
+{
+	// Switch to stopwatch mode
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+
+	int ticks = convertToTicks(0, 12, 20, 9);
+
+	int i;
+	for (i = 0; i < ticks - 1; i++)
+		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+
+	EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);	
+	EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
+
+	output(&watch, out);
+	TEST_ASSERT_EQUAL_STRING("Mode:1 0:12:20 9", out);
 }
 
 /* void test_SignalsShouldNotBeEqual(void) */
