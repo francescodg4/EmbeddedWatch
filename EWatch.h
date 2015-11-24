@@ -1,20 +1,28 @@
 #ifndef EWATCH_H
 #define EWATCH_H
 
-#include "EWatchControl.h"
+// #include "EWatchControl.h"
 #include "EWatchClock.h"
+#include "EWatchStopwatch.h"
 
-enum EWatchSignal {EW_CLOCK_TICK, EW_SET_CLOCK_MODE, EW_SET_ALARM_MODE};
+enum EWatchSignal {EW_CLOCK_TICK, EW_STOPWATCH_MODE_SIG, EW_SET_CLOCK_MODE, EW_SET_ALARM_MODE};
 // enum EWatchSignal {CLOCK_TICK};
 // enum EWatchControlSignal {SET_ALARM_MODE = 3, SET_CLOCK_MODE};
-// enum EWatchMode {CLOCK_MODE, ALARM_MODE};
-// enum EWatchState {CLOCK_STATE, ALARM_STATE};
+enum EWatchMode {CLOCK_MODE, STOPWATCH_MODE, ALARM_MODE};
+enum EWatchState {CLOCK_STATE, STOPWATCH_STATE, ALARM_STATE};
 
 typedef struct {
+	int hours;
+	int minutes;
+	int seconds;
+	int tenths;
+	enum EWatchMode mode;
+
   // int counter;
-  EWatchControl control;
-  EWatchClock clock;
-  // enum EWatchState state;
+	// EWatchControl control;
+	EWatchClock clock;
+	EWatchStopwatch stopwatch;
+	enum EWatchState state;
 } EWatch;
 
 void EWatch_Init(EWatch *this);

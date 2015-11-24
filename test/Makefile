@@ -3,29 +3,25 @@ CFLAGS = -g -Wall
 LDFLAGS = -Lunity -lunity
 TARGET = test
 
-all: test $(STOPWATCH_TARGET)
+# --------------- EWatch
+EWATCH_TARGET = testEWatch
+EWATCH_SRC = ../EWatch.c ../EWatchClock.c ../EWatchControl.c ../EWatchStopwatch.c
+EWATCH_TEST = TestEWatch.c
 
-test: EWatch.o TestEWatch.o TestEWatch_Runner.o EWatchControl.o EWatchClock.o
-	$(CC) -o $(TARGET) $^ -Lunity -lunity
-	./$@
+# Generate runner file
+EWATCH_TEST_RUNNER = $(EWATCH_TEST:%.c=%_Runner.c)
 
-TestEWatch_Runner.o: TestEWatch_Runner.c
-	$(CC) -c -o $@ -Iunity $<
+# Generate obj file
+EWATCH_OBJS = $(EWATCH_SRC:%.c=%.o)
+EWATCH_TEST_OBJS = $(EWATCH_TEST:%.c=%.o) $(EWATCH_TEST_RUNNER:%.c=%.o)
 
-TestEWatch_Runner.c: TestEWatch.c
+$(EWATCH_TEST_RUNNER): $(EWATCH_TEST)
 	ruby unity/auto/generate_test_runner.rb $< $@
 
-TestEWatch.o: TestEWatch.c
-	$(CC) -c $^ -Iunity
+$(EWATCH_TEST_OBJS) utility.o: CFLAGS += -Iunity
 
-EWatch.o: ../EWatch.c
-	$(CC) -c $^
-
-EWatchControl.o: ../EWatchControl.c
-	$(CC) -c $^
-
-EWatchClock.o: ../EWatchClock.c
-	$(CC) -c $^
+$(EWATCH_TARGET): $(EWATCH_TEST_OBJS) $(EWATCH_OBJS) utility.o
+	$(CC) -o $(EWATCH_TARGET) $^ $(LDFLAGS)
 
 # --------------- EWatchStopwatch
 STOPWATCH_TARGET = testStopwatch
