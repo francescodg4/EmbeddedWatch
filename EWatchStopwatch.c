@@ -14,8 +14,9 @@ void EWatchStopwatch_Init(EWatchStopwatch *this)
 {
 	EWatchClock_Init(&this->internal);
 	transition(this, ST_STOP_STATE);
-	
+	reset(this);	
 }
+
 void EWatchStopwatch_Dispatch(EWatchStopwatch *this, enum EWatchStopwatchSignal sig)
 {
 	switch (this->state) {
