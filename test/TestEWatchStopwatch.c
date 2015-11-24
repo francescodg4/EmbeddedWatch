@@ -19,6 +19,15 @@ void test_InitializedCounterAtZero(void)
 	TEST_ASSERT_EQUAL(ST_STOP_STATE, stopW.state);
 }
 
+void test_WhenInStopStateDiscardClockEvents(void)
+{
+	int i;
+	
+	for (i = 0; i < 100; i++)
+		EWatchStopwatch_Dispatch(&watch, ST_CLOCK_TICK_SIG);
+	
+	TEST_ASSERT_EQUAL(0, EWatchStopwatch_GetTenths(&watch));
+}
 
 void test_RunFor5Tenths(void)
 {
