@@ -20,17 +20,17 @@ static void clockOutput(EWatch *this)
 	this->mode = CLOCK_MODE;
 }
 
-static unsigned int convertSignal(enum EWatchSignal sig, enum ChildFsm child)
-{
-	unsigned int offset = 0;
+/* static unsigned int convertSignal(enum EWatchSignal sig, enum ChildFsm child) */
+/* { */
+/* 	unsigned int offset = 0; */
 
-	if (child == CLOCK)
-	  offset = EW_CLOCK_TICK;
-	else if (child == CONTROL)
-	  offset = EW_SET_CLOCK_MODE;
+/* 	if (child == CLOCK) */
+/* 	  offset = EW_CLOCK_TICK_SIG; */
+/* 	else if (child == CONTROL) */
+/* 	  offset = EW_SET_CLOCK_MODE; */
 
-	return sig - offset;
-}
+/* 	return sig - offset; */
+/* } */
 
 static void transition(EWatch *this, enum EWatchState state)
 {
@@ -42,8 +42,7 @@ static void clockState(EWatch *this, enum EWatchSignal sig)
 {
 	switch (sig) {
 
-	case EW_CLOCK_TICK:
-		EWatchClock_Dispatch(&this->clock, CLOCK_TICK);
+	case EW_CLOCK_TICK_SIG:
 		clockOutput(this);
 		break;
 
@@ -59,17 +58,28 @@ static void clockState(EWatch *this, enum EWatchSignal sig)
 
 void stopwatchState(EWatch *this, enum EWatchSignal sig)
 {
+	// Open for extension: lap view can be implemented with + and -
+
 	switch(sig) {
 
-	case EW_STOPWATCH_MODE_SIG:
+	case EW_BUTTON_P_SIG:
 		EWatchStopwatch_Dispatch(&this->stopwatch, ST_TOGGLE_SIG);
 		break;
 
-	case EW_CLOCK_TICK:
+	case EW_BUTTON_M_SIG:
+		EWatchStopwatch_Dispatch(&this->stopwatch, ST_TOGGLE_SIG);
+		break;
+
+	case EW_CLOCK_TICK_SIG:
 		EWatchStopwatch_Dispatch(&this->stopwatch, ST_CLOCK_TICK_SIG);
 		stopwatchOutput(this);
 		break;
-	
+
+	case EW_CLOCK_MODE_SIG:
+		transition(this, CLOCK_STATE);
+		clockOutput(this);
+		break;
+
 	default:
 		break;
 	}
@@ -88,6 +98,10 @@ void EWatch_Init(EWatch *this)
 
 void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 {
+	/* Update concurrent time */
+	if (sig == EW_CLOCK_TICK_SIG)
+		EWatchClock_Dispatch(&this->clock, CLOCK_TICK);
+
 	switch (this->state) {
 
 	case CLOCK_STATE:
@@ -102,7 +116,7 @@ void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 		break;
 	}
 	
-   	/* if (sig == EW_CLOCK_TICK) */
+   	/* if (sig == EW_CLOCK_TICK_SIG) */
 	/* 	EWatchClock_Dispatch(&this->clock, convertSignal(sig, CLOCK)); */
 	/* else if (sig >= EW_SET_CLOCK_MODE && sig <= EW_SET_ALARM_MODE) */
 	/*   	EWatchControl_Dispatch(&this->control, convertSignal(sig, CONTROL));       */
