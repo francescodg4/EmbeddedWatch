@@ -29,6 +29,9 @@ void EWatchStopwatch_Dispatch(EWatchStopwatch *this, enum EWatchStopwatchSignal 
 		case ST_TOGGLE_SIG:
 			transition(this, ST_STOP_STATE);
 			break;
+
+		default:
+			break;
 		}
 
 		break;
@@ -38,9 +41,10 @@ void EWatchStopwatch_Dispatch(EWatchStopwatch *this, enum EWatchStopwatchSignal 
 
 		case ST_TOGGLE_SIG:
 			transition(this, ST_RUNNING_STATE);
-			reset(this);
 			break;
 
+		case ST_RESET_SIG:
+			reset(this);
 		default:
 			break;
 		}
