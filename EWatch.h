@@ -2,21 +2,18 @@
 #define EWATCH_H
 
 #include "EWatchControl.h"
+#include "EWatchClock.h"
 
-extern const int TENTHS_IN_DAY;
-extern const int TENTHS_IN_HOUR;
-extern const int TENTHS_IN_MINUTE;
-extern const int TENTHS_IN_SECOND;
-
-enum EWatchSignal {CLOCK_TICK = 1};
+// enum EWatchSignal {CLOCK_TICK = 1};
 // enum EWatchSignal {CLOCK_TICK};
 // enum EWatchControlSignal {SET_ALARM_MODE = 3, SET_CLOCK_MODE};
 // enum EWatchMode {CLOCK_MODE, ALARM_MODE};
 // enum EWatchState {CLOCK_STATE, ALARM_STATE};
 
 typedef struct {
-  int counter;
+  // int counter;
   EWatchControl control;
+  EWatchClock clock;
   // enum EWatchState state;
 } EWatch;
 
