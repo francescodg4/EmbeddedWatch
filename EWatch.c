@@ -37,6 +37,44 @@ static void transition(EWatch *this, enum EWatchState state)
 	this->state = state;
 }
 
+
+static void clockState(EWatch *this, enum EWatchSignal sig)
+{
+	switch (sig) {
+
+	case EW_CLOCK_TICK:
+		EWatchClock_Dispatch(&this->clock, CLOCK_TICK);
+		clockOutput(this);
+		break;
+
+	case EW_STOPWATCH_MODE_SIG:
+		transition(this, STOPWATCH_STATE);
+		stopwatchOutput(this);
+		break;
+
+	default:
+		break;
+	}
+}
+
+void stopwatchState(EWatch *this, enum EWatchSignal sig)
+{
+	switch(sig) {
+
+	case EW_STOPWATCH_MODE_SIG:
+		EWatchStopwatch_Dispatch(&this->stopwatch, ST_TOGGLE_SIG);
+		break;
+
+	case EW_CLOCK_TICK:
+		EWatchStopwatch_Dispatch(&this->stopwatch, ST_CLOCK_TICK_SIG);
+		stopwatchOutput(this);
+		break;
+	
+	default:
+		break;
+	}
+}
+
 void EWatch_Init(EWatch *this) 
 {
 	EWatchClock_Init(&this->clock);
@@ -53,24 +91,11 @@ void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 	switch (this->state) {
 
 	case CLOCK_STATE:
-
-		switch (sig) {
-
-		case EW_CLOCK_TICK:
-			EWatchClock_Dispatch(&this->clock, CLOCK_TICK);
-			clockOutput(this);
-			break;
-
-		case EW_STOPWATCH_MODE_SIG:
-			transition(this, STOPWATCH_STATE);
-			stopwatchOutput(this);
-			break;
-
-		default:
-			break;
-		}
+		clockState(this, sig);		
+		break;
 
 	case STOPWATCH_STATE:
+		stopwatchState(this, sig);
 		break;
 	
 	default:
