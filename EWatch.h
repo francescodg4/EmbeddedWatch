@@ -5,7 +5,16 @@
 #include "EWatchClock.h"
 #include "EWatchStopwatch.h"
 
-enum EWatchSignal {EW_CLOCK_TICK, EW_STOPWATCH_MODE_SIG, EW_SET_CLOCK_MODE, EW_SET_ALARM_MODE};
+enum EWatchSignal {
+	EW_CLOCK_TICK_SIG, 
+	EW_STOPWATCH_MODE_SIG,
+	EW_CLOCK_MODE_SIG,
+	EW_BUTTON_P_SIG,
+	EW_BUTTON_M_SIG,
+	EW_SET_CLOCK_MODE,
+	EW_SET_ALARM_MODE
+};
+
 // enum EWatchSignal {CLOCK_TICK};
 // enum EWatchControlSignal {SET_ALARM_MODE = 3, SET_CLOCK_MODE};
 enum EWatchMode {CLOCK_MODE, STOPWATCH_MODE, ALARM_MODE};
