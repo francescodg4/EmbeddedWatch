@@ -1,7 +1,7 @@
 #ifndef EWATCHCONTROL_H
 #define EWATHCCONTROL_H
 
-enum EWatchControlSignal {SET_ALARM_MODE = 1, SET_CLOCK_MODE};
+enum EWatchControlSignal {SET_CLOCK_MODE, SET_ALARM_MODE};
 enum EWatchMode {CLOCK_MODE, ALARM_MODE};
 enum EWatchControlState {CLOCK_STATE, ALARM_STATE};
 

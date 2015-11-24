@@ -12,7 +12,7 @@ void EWatchClock_Init(EWatchClock *this)
 
 void EWatchClock_Dispatch(EWatchClock *this, enum EWatchClockSignal sig)
 {
-	if (sig == CLOCK_TICK)
+   	if (sig == CLOCK_TICK)
 		this->counter = (this->counter + 1) % TENTHS_IN_DAY;
 }
 
