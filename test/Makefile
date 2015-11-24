@@ -28,7 +28,7 @@ EWatchClock.o: ../EWatchClock.c
 	$(CC) -c $^
 
 # --------------- EWatchStopwatch
-STOPWATCH_TARGET = testEWatchStopwatch
+STOPWATCH_TARGET = testStopwatch
 STOPWATCH_SRC = ../EWatchStopwatch.c ../EWatchClock.c
 STOPWATCH_TEST = TestEWatchStopwatch.c
 
@@ -42,10 +42,11 @@ STOPWATCH_TEST_OBJS = $(STOPWATCH_TEST:%.c=%.o) $(STOPWATCH_TEST_RUNNER:%.c=%.o)
 $(STOPWATCH_TEST_RUNNER): $(STOPWATCH_TEST)
 	ruby unity/auto/generate_test_runner.rb $< $@
 
-$(STOPWATCH_TEST_OBJS): CFLAGS += -Iunity
+$(STOPWATCH_TEST_OBJS) utility.o: CFLAGS += -Iunity
 
-stopwatch: $(STOPWATCH_TEST_OBJS) $(STOPWATCH_OBJS) utility.o
+$(STOPWATCH_TARGET): $(STOPWATCH_TEST_OBJS) $(STOPWATCH_OBJS) utility.o
 	$(CC) -o $(STOPWATCH_TARGET) $^ $(LDFLAGS)
+
 PHONY: clean
 
 clean:
