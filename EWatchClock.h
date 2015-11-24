@@ -9,7 +9,7 @@ extern const int TENTHS_IN_SECOND;
 enum EWatchClockSignal {CLOCK_TICK};
 
 typedef struct {
-  int counter;
+	int counter;
 } EWatchClock;
 
 void EWatchClock_Init(EWatchClock *this);
