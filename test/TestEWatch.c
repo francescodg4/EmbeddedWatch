@@ -1,27 +1,14 @@
 #include "unity.h"
 #include "../EWatch.h"
-#include "test_utility.h"
+#include "utility.h"
 
 static EWatch watch;
 const enum EWatchSignal CLOCK_UPDATE = -1;
-
-/* static int convertToTicks(int hours, int minutes, int seconds, int tenths) */
-/* { */
-/* 	int ticks = 0; */
-
-/* 	ticks += hours * TENTHS_IN_HOUR; */
-/* 	ticks += minutes * TENTHS_IN_MINUTE; */
-/* 	ticks += seconds * TENTHS_IN_SECOND; */
-/* 	ticks += tenths; */
-
-/* 	return ticks; */
-/* } */
 
 void setUp(void)
 {
 	EWatch_Init(&watch);
 }
-
 
 void test_SignalsShouldNotBeEqual(void)
 {
