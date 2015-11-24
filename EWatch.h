@@ -4,7 +4,7 @@
 #include "EWatchControl.h"
 #include "EWatchClock.h"
 
-// enum EWatchSignal {CLOCK_TICK = 1};
+enum EWatchSignal {EW_CLOCK_TICK, EW_SET_CLOCK_MODE, EW_SET_ALARM_MODE};
 // enum EWatchSignal {CLOCK_TICK};
 // enum EWatchControlSignal {SET_ALARM_MODE = 3, SET_CLOCK_MODE};
 // enum EWatchMode {CLOCK_MODE, ALARM_MODE};
@@ -24,7 +24,7 @@ int EWatch_GetSeconds(EWatch *this);
 int EWatch_GetTenths(EWatch *this);
 enum EWatchMode EWatch_GetMode(EWatch *this);
 
-void EWatch_Dispatch(EWatch *this, const unsigned int sig[2]);
+void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig);
 // void EWatch_Dispatch(EWatch *this, unsigned int sig);
 // void EWatch_Dispatch(EWatch *this, EWatchSignal sig);
 

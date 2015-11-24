@@ -6,7 +6,7 @@ extern const int TENTHS_IN_HOUR;
 extern const int TENTHS_IN_MINUTE;
 extern const int TENTHS_IN_SECOND;
 
-enum EWatchClockSignal {CLOCK_TICK = 1};
+enum EWatchClockSignal {CLOCK_TICK};
 
 typedef struct {
   int counter;
