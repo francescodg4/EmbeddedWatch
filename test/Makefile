@@ -47,6 +47,26 @@ $(STOPWATCH_TEST_OBJS) utility.o: CFLAGS += -Iunity
 $(STOPWATCH_TARGET): $(STOPWATCH_TEST_OBJS) $(STOPWATCH_OBJS) utility.o
 	$(CC) -o $(STOPWATCH_TARGET) $^ $(LDFLAGS)
 
+# --------------- EWatchAlarm
+ALARM_TARGET = testAlarm
+ALARM_SRC = ../EWatchAlarm.c ../EWatchClock.c
+ALARM_TEST = TestEWatchAlarm.c
+
+# Generate runner file
+ALARM_TEST_RUNNER = $(ALARM_TEST:%.c=%_Runner.c)
+
+# Generate obj file
+ALARM_OBJS = $(ALARM_SRC:%.c=%.o)
+ALARM_TEST_OBJS = $(ALARM_TEST:%.c=%.o) $(ALARM_TEST_RUNNER:%.c=%.o)
+
+$(ALARM_TEST_RUNNER): $(ALARM_TEST)
+	ruby unity/auto/generate_test_runner.rb $< $@
+
+$(ALARM_TEST_OBJS) utility.o: CFLAGS += -Iunity
+
+$(ALARM_TARGET): $(ALARM_TEST_OBJS) $(ALARM_OBJS) utility.o
+	$(CC) -o $(ALARM_TARGET) $^ $(LDFLAGS)
+
 PHONY: clean
 
 clean:
