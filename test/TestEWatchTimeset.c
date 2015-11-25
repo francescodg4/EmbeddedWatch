@@ -108,3 +108,11 @@ void test_DecrementMinutes(void)
 
 	checkTime(0, 59, 0, 0, &w.internal);
 }
+
+void test_DecrementMinutesAtLimit(void)
+{
+	EWatchTimeset_Dispatch(&w, TS_SET_MINUTES_MODE_SIG);
+	EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
+
+	checkTime(23, 59, 0, 0, &w.internal);
+}
