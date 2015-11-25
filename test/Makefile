@@ -23,7 +23,7 @@ $(EWATCH_TARGET): $(EWATCH_TEST_OBJS) $(EWATCH_OBJS) utility.o
 	$(CC) -o $(EWATCH_TARGET) $^ $(LDFLAGS)
 
 # --------------- EWatchStopwatch
-STOPWATCH_TARGET = testStopwatch
+STOPWATCH_TARGET = testEWatchStopwatch
 STOPWATCH_SRC = ../EWatchStopwatch.c ../ClockCounter.c
 STOPWATCH_TEST = TestEWatchStopwatch.c
 
@@ -63,7 +63,7 @@ $(STOPWATCH_TARGET): $(STOPWATCH_TEST_OBJS) $(STOPWATCH_OBJS) utility.o
 # 	$(CC) -o $(ALARM_TARGET) $^ $(LDFLAGS)
 
 # --------------- EWatchClock
-CLOCK_TARGET = testClock
+CLOCK_TARGET = testEWatchClock
 CLOCK_SRC = ../EWatchClock.c ../ClockCounter.c
 CLOCK_TEST = TestEWatchClock.c
 
@@ -83,9 +83,9 @@ $(CLOCK_TARGET): $(CLOCK_TEST_OBJS) $(CLOCK_OBJS) utility.o
 	$(CC) -o $(CLOCK_TARGET) $^ $(LDFLAGS)
 
 # --------------- EWatchTimeset
-TARGET = testTimeset
-SRC = ../EWatchTimeset.c ../EWatchClock.c
-TEST = TestTimeset.c
+TARGET = testEWatchTimeset
+SRC = ../EWatchTimeset.c ../EWatchClock.c ../ClockCounter.c
+TEST = TestEWatchTimeset.c
 
 # Generate runner file
 TEST_RUNNER = $(TEST:%.c=%_Runner.c)

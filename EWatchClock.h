@@ -1,12 +1,6 @@
 #ifndef EWATCHCLOCK_H
 #define EWATCHCLOCK_H
 
-/* extern const int TENTHS_IN_DAY;
-extern const int TENTHS_IN_HOUR;
-extern const int TENTHS_IN_MINUTE;
-extern const int TENTHS_IN_SECOND;
-*/
-
 #include "ClockCounter.h"
 
 enum EWatchClockSignal {CLOCK_TICK};
