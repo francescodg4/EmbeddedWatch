@@ -100,7 +100,7 @@ static void timesetState(EWatch *this, enum EWatchSignal sig)
 		break;
 
 	case EW_TIMESET_MODE_SIG:
-		EWatchTimeset_Dispatch(&timeset, TS_SET_MINUTES_MODE_SIG);
+		EWatchTimeset_Dispatch(&timeset, TS_TOGGLE_MODE_SIG);
 		updateOutput(this, TIMESET_MODE);
 		break;
 
