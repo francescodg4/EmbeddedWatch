@@ -116,3 +116,32 @@ void test_DecrementMinutesAtLimit(void)
 
 	checkTime(23, 59, 0, 0, &w.internal);
 }
+
+void test_SetTimeset(void)
+{
+	int ticks = convertToTicks(2, 30, 0, 0);
+	EWatchTimeset_Set(&w, ticks);
+
+	TEST_ASSERT_EQUAL(ticks, EWatchTimeset_GetCount(&w));
+}
+
+void test_SetTimeAndShowHoursMinutesAndSeconds(void)
+{
+	int ticks = convertToTicks(2, 32, 23, 1);
+	EWatchTimeset_Set(&w, ticks);
+	
+	checkTime(2, 32, 23, 1, &w.internal);
+}
+
+void test_SetTimeAndAddHour(void)
+{
+	int ticks = convertToTicks(2, 33, 22, 1);
+	EWatchTimeset_Set(&w, ticks);
+	
+	EWatchTimeset_Dispatch(&w, TS_INC_SIG);
+
+	TEST_ASSERT_EQUAL(3, EWatchTimeset_GetHours(&w));
+	TEST_ASSERT_EQUAL(33, EWatchTimeset_GetMinutes(&w));	
+	TEST_ASSERT_EQUAL(22, EWatchTimeset_GetSeconds(&w));
+	TEST_ASSERT_EQUAL(1, EWatchTimeset_GetTenths(&w));
+}

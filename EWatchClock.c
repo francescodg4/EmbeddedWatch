@@ -31,3 +31,13 @@ int EWatchClock_GetTenths(EWatchClock *this)
 {
 	return ClockCounter_GetTenths(&this->counter);
 }
+
+void EWatchClock_Set(EWatchClock *this, unsigned int tenths)
+{
+	ClockCounter_Set(&this->counter, tenths);
+}
+
+unsigned int EWatchClock_GetCount(EWatchClock *this)
+{
+	return ClockCounter_GetCount(&this->counter);
+}

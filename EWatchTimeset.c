@@ -59,6 +59,11 @@ void EWatchTimeset_Dispatch(EWatchTimeset *this, enum EWatchTimesetSignal sig)
 	}
 }
 
+void EWatchTimeset_Set(EWatchTimeset *this, unsigned int tenths)
+{
+	ClockCounter_Set(&this->internal, tenths);
+}
+
 int EWatchTimeset_GetHours(EWatchTimeset *this)
 {
 	return ClockCounter_GetHours(&this->internal);
@@ -66,16 +71,20 @@ int EWatchTimeset_GetHours(EWatchTimeset *this)
 
 int EWatchTimeset_GetMinutes(EWatchTimeset *this)
 {
-	return 0;
+	return ClockCounter_GetMinutes(&this->internal);
 }
 
 int EWatchTimeset_GetSeconds(EWatchTimeset *this)
 {
-	return 0;
+	return ClockCounter_GetSeconds(&this->internal);
 }
 
 int EWatchTimeset_GetTenths(EWatchTimeset *this)
 {
-	return 0;
+	return ClockCounter_GetTenths(&this->internal);
 }
 
+unsigned int EWatchTimeset_GetCount(EWatchTimeset *this)
+{
+	return ClockCounter_GetCount(&this->internal);
+}
