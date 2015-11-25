@@ -1,6 +1,24 @@
 #include "EWatch.h"
+#include "EWatchTimeset.h"
 
 // enum ChildFsm {CLOCK, CONTROL};
+static EWatchTimeset timeset;
+
+static void updateOutput(EWatch *this, enum EWatchMode mode)
+{
+	switch (mode) {
+	case SET_CLOCK_MODE:
+		this->hours = EWatchTimeset_GetHours(&timeset);
+		this->minutes = EWatchTimeset_GetMinutes(&timeset);
+		this->seconds = EWatchTimeset_GetSeconds(&timeset);
+		this->tenths = EWatchTimeset_GetTenths(&timeset);
+		break;
+	default:
+		break;
+	}
+
+	this->mode = mode;
+}
 
 static void stopwatchOutput(EWatch *this)
 {
@@ -37,6 +55,7 @@ static void transition(EWatch *this, enum EWatchState state)
 	this->state = state;
 }
 
+#include <stdio.h>
 
 static void clockState(EWatch *this, enum EWatchSignal sig)
 {
@@ -44,6 +63,14 @@ static void clockState(EWatch *this, enum EWatchSignal sig)
 
 	case EW_CLOCK_TICK_SIG:
 		clockOutput(this);
+		break;
+
+	case EW_SET_CLOCK_MODE_SIG:
+		transition(this, SET_CLOCK_STATE);
+		// Entry action
+		int time = EWatchClock_GetCount(&this->clock);
+		EWatchTimeset_Set(&timeset, time);
+		updateOutput(this, SET_CLOCK_STATE);
 		break;
 
 	case EW_STOPWATCH_MODE_SIG:
@@ -89,12 +116,15 @@ void EWatch_Init(EWatch *this)
 {
 	EWatchClock_Init(&this->clock);
 	EWatchStopwatch_Init(&this->stopwatch);
+	EWatchTimeset_Init(&timeset);
 
 	transition(this, CLOCK_STATE);
 	clockOutput(this);
 
 	// EWatchControl_Init(&this->control);
 }
+
+static void setClockState(EWatch *this, enum EWatchSignal sig);
 
 void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 {
@@ -113,7 +143,10 @@ void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 	case STOPWATCH_STATE:
 		stopwatchState(this, sig);
 		break;
-	
+
+	case SET_CLOCK_STATE:
+		setClockState(this, sig);
+		break;
 	default:
 		break;
 	}
@@ -148,4 +181,16 @@ int EWatch_GetTenths(EWatch *this)
 enum EWatchMode EWatch_GetMode(EWatch *this)
 {
 	return this->mode;
+}
+
+static void setClockState(EWatch *this, enum EWatchSignal sig)
+{
+	switch (sig) {
+	case EW_BUTTON_P_SIG:
+		EWatchTimeset_Dispatch(&timeset, TS_INC_SIG);
+		updateOutput(this, SET_CLOCK_MODE);
+		break;
+	default:
+		break;
+	}	
 }

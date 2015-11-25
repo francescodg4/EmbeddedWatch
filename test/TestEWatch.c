@@ -130,3 +130,20 @@ void test_StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)
 	output(&watch, out);
 	TEST_ASSERT_EQUAL_STRING("Mode:1 0:12:20 9", out);
 }
+
+void test_EntersInSetClockMode(void)
+{
+	int ticks = convertToTicks(0, 20, 0, 0);
+
+	int i;
+	for (i = 0; i < ticks; i++)
+		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+    
+	EWatch_Dispatch(&watch, EW_SET_CLOCK_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+
+	output(&watch, out);
+
+	TEST_ASSERT_EQUAL_STRING("Mode:3 2:20:0 0", out);
+}

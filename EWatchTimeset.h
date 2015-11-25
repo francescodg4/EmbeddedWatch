@@ -1,7 +1,6 @@
 #ifndef EWATCHTIMESET_H
 #define EWATCHTIMESET_H
 
-#include "EWatchClock.h"
 #include "ClockCounter.h"
 
 enum EWatchTimesetSignal {
@@ -20,6 +19,10 @@ typedef struct {
 
 void EWatchTimeset_Init(EWatchTimeset *this);
 void EWatchTimeset_Dispatch(EWatchTimeset *this, enum EWatchTimesetSignal sig);
+
+void EWatchTimeset_Set(EWatchTimeset *this, unsigned int tenths); 
+
+unsigned int EWatchTimeset_GetCount(EWatchTimeset *this);
 int EWatchTimeset_GetHours(EWatchTimeset *this);
 int EWatchTimeset_GetMinutes(EWatchTimeset *this);
 int EWatchTimeset_GetSeconds(EWatchTimeset *this);
