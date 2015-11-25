@@ -133,17 +133,66 @@ void test_StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)
 
 void test_EntersInSetClockMode(void)
 {
-	int ticks = convertToTicks(0, 20, 0, 0);
+	int ticks = convertToTicks(0, 20, 2, 0);
 
 	int i;
 	for (i = 0; i < ticks; i++)
 		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
     
-	EWatch_Dispatch(&watch, EW_SET_CLOCK_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 
 	output(&watch, out);
 
 	TEST_ASSERT_EQUAL_STRING("Mode:3 2:20:0 0", out);
+}
+
+void test_SwitchToTimesetModeThanToClockMode(void)
+{
+	int ticks = convertToTicks(2, 4, 11, 7);
+	
+	EWatchClock_Set(&watch.clock, ticks);
+	
+	// Add 1 hour
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+	
+	// Add 30 minutes
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+
+	int i;
+	for (i = 0; i < 30; i++)
+		EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+	
+	EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
+	
+	output(&watch, out);
+
+	TEST_ASSERT_EQUAL_STRING("Mode:0 3:34:0 0", out);
+}
+
+void test_SwitchToTimesetModeAndDecrementHoursAndMinutes(void)
+{	
+	EWatchClock_Set(&watch.clock, convertToTicks(12, 34, 0, 1));
+	
+	// Switch to timeset mode
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+	       
+	// Decrement 1 h
+	EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
+	
+        // Switch to minutes mode and decrement
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+	
+	int i;
+	for (i = 0; i < 30; i++)
+		EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
+	
+	// Swtich back to clock mode
+	EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
+
+	output(&watch, out);
+	
+	TEST_ASSERT_EQUAL_STRING("Mode:0 11:4:0 0", out);
 }
