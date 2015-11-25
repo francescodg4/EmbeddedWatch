@@ -1,11 +1,5 @@
 #include "EWatchClock.h"
 
-/* const int TENTHS_IN_DAY = 864000;
-const int TENTHS_IN_HOUR = 36000;
-const int TENTHS_IN_MINUTE = 600;
-const int TENTHS_IN_SECOND = 10;
-*/
-
 void EWatchClock_Init(EWatchClock *this)
 {
 	ClockCounter_Init(&this->counter);

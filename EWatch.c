@@ -1,6 +1,6 @@
 #include "EWatch.h"
 
-enum ChildFsm {CLOCK, CONTROL};
+// enum ChildFsm {CLOCK, CONTROL};
 
 static void stopwatchOutput(EWatch *this)
 {

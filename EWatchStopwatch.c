@@ -22,8 +22,7 @@ void EWatchStopwatch_Dispatch(EWatchStopwatch *this, enum EWatchStopwatchSignal 
 	case ST_RUNNING_STATE:
 		switch (sig) {
 
-		case ST_CLOCK_TICK_SIG:
-			// EWatchClock_Dispatch(&this->internal, CLOCK_TICK);
+		case ST_CLOCK_TICK_SIG:			
 			ClockCounter_Tick(&this->internal);
 			break;
 		
