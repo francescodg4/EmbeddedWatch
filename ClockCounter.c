@@ -15,6 +15,11 @@ void ClockCounter_Increment(ClockCounter *this, unsigned int tenths)
 	this->counter = (this->counter + tenths) % TENTHS_IN_DAY;
 }
 
+void ClockCounter_Tick(ClockCounter *this)
+{
+	this->counter = (this->counter + 1) % TENTHS_IN_DAY;
+}
+
 void ClockCounter_Reset(ClockCounter *this)
 {
 	this->counter = 0;

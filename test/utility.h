@@ -1,7 +1,7 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
-#include "../EWatchClock.h"
+#include "../ClockCounter.h"
 
 int convertToTicks(int hours, int minutes, int seconds, int tenths);
 
@@ -10,6 +10,6 @@ void checkTime(
 	int expectedMinutes,
 	int expectedSeconds,
 	int expectedTenths,
-	EWatchClock *w);
+	ClockCounter *c);
 
 #endif /* UTILITY_H */

@@ -1,14 +1,14 @@
 #ifndef EWATCHSTOPWATCH_H
 #define EWATCHSTOPWATCH_H
 
-#include "EWatchClock.h"
+#include "ClockCounter.h"
 
 enum EWatchStopwatchSignal {ST_CLOCK_TICK_SIG, ST_TOGGLE_SIG, ST_RESET_SIG};
 // enum EWatchStopwatchSignal {ST_CLOCK_TICK, ST_BUTTON_P, ST_BUTTON_M};
 enum EWatchStopwatchState {ST_RUNNING_STATE, ST_STOP_STATE};
 
 typedef struct {
-	EWatchClock internal;
+	ClockCounter internal;
 	enum EWatchStopwatchState state;
 } EWatchStopwatch;
 

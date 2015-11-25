@@ -7,14 +7,13 @@ static void transition(EWatchStopwatch *this, enum EWatchStopwatchState state)
 
 static void reset(EWatchStopwatch *this)
 {
-	this->internal.counter = 0;
+	ClockCounter_Reset(&this->internal);
 }
 
 void EWatchStopwatch_Init(EWatchStopwatch *this)
 {
-	EWatchClock_Init(&this->internal);
+	ClockCounter_Init(&this->internal);
 	transition(this, ST_STOP_STATE);
-	reset(this);	
 }
 
 void EWatchStopwatch_Dispatch(EWatchStopwatch *this, enum EWatchStopwatchSignal sig)
@@ -24,7 +23,8 @@ void EWatchStopwatch_Dispatch(EWatchStopwatch *this, enum EWatchStopwatchSignal 
 		switch (sig) {
 
 		case ST_CLOCK_TICK_SIG:
-			EWatchClock_Dispatch(&this->internal, CLOCK_TICK);
+			// EWatchClock_Dispatch(&this->internal, CLOCK_TICK);
+			ClockCounter_Tick(&this->internal);
 			break;
 		
 		case ST_TOGGLE_SIG:
@@ -56,20 +56,20 @@ void EWatchStopwatch_Dispatch(EWatchStopwatch *this, enum EWatchStopwatchSignal 
 
 int EWatchStopwatch_GetHours(EWatchStopwatch *this)
 {
-	return EWatchClock_GetHours(&this->internal);
+	return ClockCounter_GetHours(&this->internal);
 }
 
 int EWatchStopwatch_GetMinutes(EWatchStopwatch *this)
 {
-	return EWatchClock_GetMinutes(&this->internal);
+	return ClockCounter_GetMinutes(&this->internal);
 }
 
 int EWatchStopwatch_GetSeconds(EWatchStopwatch *this)
 {
-	return EWatchClock_GetSeconds(&this->internal);
+	return ClockCounter_GetSeconds(&this->internal);
 }
 
 int EWatchStopwatch_GetTenths(EWatchStopwatch *this)
 {
-	return EWatchClock_GetTenths(&this->internal);
+	return ClockCounter_GetTenths(&this->internal);
 }
