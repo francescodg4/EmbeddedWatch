@@ -31,7 +31,7 @@ typedef struct {
 	// EWatchControl control;
 	EWatchClock clock;
 	EWatchStopwatch stopwatch;
-	enum EWatchState state;
+	void (*state) (EWatch *, enum EWatchSignal);
 } EWatch;
 
 void EWatch_Init(EWatch *this);
