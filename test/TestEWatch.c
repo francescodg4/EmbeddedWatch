@@ -227,4 +227,34 @@ void test_ReturningToHoursAfterMinutesChangedIsAllowed(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:0 12:20:0 0", out);
 }
 	
+void test_ClockTicksDoesNotEffectTimeset(void)
+{
+	EWatchClock_Set(&watch.clock, convertToTenths(12, 30, 34, 2));
+
+	// Switch to timeset mode
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+	
+	// Clock is ticking...
+	int ticks = convertToTenths(0, 0, 25, 8);
+	int i;
+	for (i = 0; i < ticks; i++)
+		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+
+	// Hours + 1
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+
+	// Switch to minutes mode
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+
+	// Minute + 30
+	for (i = 0; i < 30; i++)
+		EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+
+	// Switch back to clock
+	EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
+
+	output(&watch, out);
+
+	TEST_ASSERT_EQUAL_STRING("Mode:0 14:0:0 0", out);
+}
 	
