@@ -67,3 +67,44 @@ void test_AddMinutesThanAddHours(void)
 	
 	checkTime(2, 30, 0, 0, &w.internal);
 }
+
+void test_DecrementHours(void)
+{
+	int time = convertToTicks(2, 30, 0, 0);
+	ClockCounter_Set(&w.internal, time);
+
+	EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
+	
+	checkTime(1, 30, 0, 0, &w.internal);
+}
+
+void test_DecrementAtLimit(void)
+{
+	EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
+	checkTime(23, 0, 0, 0, &w.internal);
+
+	int anHour = convertToTicks(1, 0, 0, 0);
+	ClockCounter_Set(&w.internal, anHour);
+
+	EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
+	EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
+	
+	checkTime(23, 0, 0, 0, &w.internal);
+}
+
+void test_DecrementMinutes(void)
+{
+	int secureTime = convertToTicks(1, 23, 0, 0);	
+	ClockCounter_Set(&w.internal, secureTime);
+
+	EWatchTimeset_Dispatch(&w, TS_SET_MINUTES_MODE_SIG);
+	EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
+
+	checkTime(1, 22, 0, 0, &w.internal);
+
+	int i;
+	for (i = 0; i < 23; i++)
+		EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
+
+	checkTime(0, 59, 0, 0, &w.internal);
+}

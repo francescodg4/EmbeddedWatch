@@ -12,7 +12,8 @@ typedef struct {
 
 void ClockCounter_Init(ClockCounter *this);
 
-void ClockCounter_Increment(ClockCounter *this, unsigned int tenths);
+void ClockCounter_Increment(ClockCounter *this, int tenths);
+void ClockCounter_Decrement(ClockCounter *this, int tenths);
 void ClockCounter_Tick(ClockCounter *this);
 
 void ClockCounter_Reset(ClockCounter *this);
