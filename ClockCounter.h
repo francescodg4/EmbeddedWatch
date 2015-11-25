@@ -25,4 +25,7 @@ int ClockCounter_GetSeconds(ClockCounter *this);
 int ClockCounter_GetTenths(ClockCounter *this);
 unsigned int ClockCounter_GetCount(ClockCounter *this);
 
+int convertToTicks(int hours, int minutes, int seconds, int tenths);
+int convertToTenths(int hours, int minutes, int seconds, int tenths);
+
 #endif /* CLOCKCOUNTER_H */
