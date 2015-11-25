@@ -62,25 +62,25 @@ LDFLAGS = -Lunity -lunity
 # $(ALARM_TARGET): $(ALARM_TEST_OBJS) $(ALARM_OBJS) utility.o
 # 	$(CC) -o $(ALARM_TARGET) $^ $(LDFLAGS)
 
-# # --------------- EWatchClock
-# CLOCK_TARGET = testClock
-# CLOCK_SRC = ../EWatchClock.c
-# CLOCK_TEST = TestEWatchClock.c
+# --------------- EWatchClock
+CLOCK_TARGET = testClock
+CLOCK_SRC = ../EWatchClock.c ../ClockCounter.c
+CLOCK_TEST = TestEWatchClock.c
 
-# # Generate runner file
-# CLOCK_TEST_RUNNER = $(CLOCK_TEST:%.c=%_Runner.c)
+# Generate runner file
+CLOCK_TEST_RUNNER = $(CLOCK_TEST:%.c=%_Runner.c)
 
-# # Generate obj file
-# CLOCK_OBJS = $(CLOCK_SRC:%.c=%.o)
-# CLOCK_TEST_OBJS = $(CLOCK_TEST:%.c=%.o) $(CLOCK_TEST_RUNNER:%.c=%.o)
+# Generate obj file
+CLOCK_OBJS = $(CLOCK_SRC:%.c=%.o)
+CLOCK_TEST_OBJS = $(CLOCK_TEST:%.c=%.o) $(CLOCK_TEST_RUNNER:%.c=%.o)
 
-# $(CLOCK_TEST_RUNNER): $(CLOCK_TEST)
-# 	ruby unity/auto/generate_test_runner.rb $< $@
+$(CLOCK_TEST_RUNNER): $(CLOCK_TEST)
+	ruby unity/auto/generate_test_runner.rb $< $@
 
-# $(CLOCK_TEST_OBJS) utility.o: CFLAGS += -Iunity
+$(CLOCK_TEST_OBJS) utility.o: CFLAGS += -Iunity
 
-# $(CLOCK_TARGET): $(CLOCK_TEST_OBJS) $(CLOCK_OBJS) utility.o
-# 	$(CC) -o $(CLOCK_TARGET) $^ $(LDFLAGS)
+$(CLOCK_TARGET): $(CLOCK_TEST_OBJS) $(CLOCK_OBJS) utility.o
+	$(CC) -o $(CLOCK_TARGET) $^ $(LDFLAGS)
 
 # --------------- EWatchTimeset
 TARGET = testTimeset
