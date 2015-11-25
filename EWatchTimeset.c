@@ -17,12 +17,12 @@ void EWatchTimeset_Dispatch(EWatchTimeset *this, enum EWatchTimesetSignal sig)
 	case TS_SET_HOURS_STATE:
 		switch (sig) {
 
-		case TS_INC_HOURS_SIG:
+		case TS_INC_SIG:
 			ClockCounter_Increment(&this->internal, TENTHS_IN_HOUR);
 			break;
 			
 		case TS_SET_MINUTES_MODE_SIG:
-			transition(&this->internal, TS_SET_MINUTES_STATE);
+			transition(this, TS_SET_MINUTES_STATE);
 			break;
 
 		default:
@@ -33,8 +33,12 @@ void EWatchTimeset_Dispatch(EWatchTimeset *this, enum EWatchTimesetSignal sig)
 
 	case TS_SET_MINUTES_STATE:
 		switch (sig) {
-		case TS_INC_MINUTES_SIG:
+		case TS_INC_SIG:
 			ClockCounter_Increment(&this->internal, TENTHS_IN_MINUTE);
+			break;
+		case TS_SET_HOURS_MODE_SIG:
+			transition(this, TS_SET_HOURS_STATE);
+			break;
 		default:
 			break;
 		}
