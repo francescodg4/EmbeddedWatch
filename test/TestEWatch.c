@@ -227,7 +227,7 @@ void test_ReturningToHoursAfterMinutesChangedIsAllowed(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:0 12:20:0 0", out);
 }
 	
-void test_ClockTicksDoesNotEffectTimeset(void)
+void test_ClockTicksDoesNotAffectTimeset(void)
 {
 	EWatchClock_Set(&watch.clock, convertToTenths(12, 30, 34, 2));
 
@@ -258,3 +258,25 @@ void test_ClockTicksDoesNotEffectTimeset(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:0 14:0:0 0", out);
 }
 	
+static void waitFor(int hours, int minutes, int seconds, int tenths)
+{
+	int i, ticks;
+	ticks = convertToTenths(hours, minutes, seconds, tenths);
+
+	for (i = 0; i < ticks; i++)
+		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+}
+
+void test_SwitchToTimesetFromArbitraryState(void)
+{
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+
+	waitFor(0, 12, 33, 8);
+	
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+	
+	output(&watch, out);
+
+	TEST_ASSERT_EQUAL_STRING("Mode:3 0:12:0 0", out);	
+}
