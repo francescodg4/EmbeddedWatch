@@ -5,10 +5,8 @@
 #include "ClockCounter.h"
 
 enum EWatchTimesetSignal {
-	TS_INC_HOURS_SIG,
-	TS_DEC_HOURS_SIG,
-	TS_INC_MINUTES_SIG,
-	TS_DEC_MINUTES_SIG,
+	TS_INC_SIG,
+	TS_DEC_SIG,
 	TS_SET_HOURS_MODE_SIG,
 	TS_SET_MINUTES_MODE_SIG
 };
