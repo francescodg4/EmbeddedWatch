@@ -121,13 +121,11 @@ static void timesetState(EWatch *this, enum EWatchSignal sig)
 
 	switch (sig) {
 	case ENTRY_SIG:
-		// Entry action
 		time = EWatchClock_GetCount(&this->clock);
 		EWatchTimeset_Set(&timeset, time);
 		break;
 
 	case EXIT_SIG:
-		 /* Update clock */
 		hours = EWatchTimeset_GetHours(&timeset);
 		minutes = EWatchTimeset_GetMinutes(&timeset);
 		EWatchClock_Set(&this->clock, convertToTenths(hours, minutes, 0, 0));
@@ -207,11 +205,11 @@ static void stopwatchState(EWatch *this, enum EWatchSignal sig)
 		break;
 
 	case EW_BUTTON_M_SIG:
-		EWatchStopwatch_Dispatch(&this->stopwatch, ST_TOGGLE_SIG);
+		EWatchStopwatch_Dispatch(&this->stopwatch, ST_RESET_SIG);
+		updateOutput(this, STOPWATCH_MODE);
 		break;
 
 	case EW_CLOCK_TICK_SIG:
-//		EWatchStopwatch_Dispatch(&this->stopwatch, ST_CLOCK_TICK_SIG);
 		updateOutput(this, STOPWATCH_MODE);
 		break;
 
