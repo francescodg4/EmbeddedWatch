@@ -4,6 +4,7 @@
 // #include "EWatchControl.h"
 #include "EWatchClock.h"
 #include "EWatchStopwatch.h"
+#include "EWatchAlarm.h"
 
 enum EWatchSignal {
 	EW_CLOCK_TICK_SIG, 
@@ -12,7 +13,7 @@ enum EWatchSignal {
 	EW_BUTTON_P_SIG,
 	EW_BUTTON_M_SIG,
 	EW_TIMESET_MODE_SIG,
-	EW_SET_ALARM_MODE,
+	EW_ALARM_MODE_SIG,
 	EXIT_SIG,
 	ENTRY_SIG
 };
@@ -29,11 +30,13 @@ struct EWatch_ {
 	int minutes;
 	int seconds;
 	int tenths;
+	enum AlarmState alarmState;
 	enum EWatchMode mode;
   // int counter;
 	// EWatchControl control;
 	EWatchClock clock;
 	EWatchStopwatch stopwatch;
+	EWatchAlarm alarm;
 	void (*state)(EWatch *, enum EWatchSignal);
 	// State state;
 };
@@ -44,6 +47,7 @@ int EWatch_GetMinutes(EWatch *this);
 int EWatch_GetSeconds(EWatch *this);
 int EWatch_GetTenths(EWatch *this);
 enum EWatchMode EWatch_GetMode(EWatch *this);
+enum AlarmState EWatch_GetAlarmState(EWatch *this);
 
 void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig);
 // void EWatch_Dispatch(EWatch *this, unsigned int sig);

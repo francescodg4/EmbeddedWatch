@@ -13,12 +13,14 @@ static void transition(EWatch *this, enum EWatchState state);
 static void clockState(EWatch *this, enum EWatchSignal sig);
 static void stopwatchState(EWatch *this, enum EWatchSignal sig);
 static void timesetState(EWatch *this, enum EWatchSignal sig);
+static void alarmState(EWatch *this, enum EWatchSignal sig);
 
 void EWatch_Init(EWatch *this) 
 {
 	EWatchClock_Init(&this->clock);
 	EWatchStopwatch_Init(&this->stopwatch);
 	EWatchTimeset_Init(&timeset);
+	EWatchAlarm_Init(&this->alarm, &this->clock.counter);
 
 	this->state = clockState;
 
@@ -83,6 +85,11 @@ enum EWatchMode EWatch_GetMode(EWatch *this)
 	return this->mode;
 }
 
+enum AlarmState EWatch_GetAlarmState(EWatch *this)
+{
+	return this->alarmState;
+}
+
 // --------------- Private functions --------------- //
 
 static void transition(EWatch *this, enum EWatchState state)
@@ -102,6 +109,10 @@ static void transition(EWatch *this, enum EWatchState state)
 
 	case TIMESET_STATE:
 		this->state = timesetState;
+		break;
+
+	case ALARM_STATE:
+		this->state = alarmState;
 		break;
 
 	default:
@@ -189,6 +200,11 @@ static void clockState(EWatch *this, enum EWatchSignal sig)
 		updateOutput(this, STOPWATCH_MODE);
 		break;
 
+	case EW_ALARM_MODE_SIG:
+		transition(this, ALARM_STATE);
+		updateOutput(this, ALARM_MODE);
+		break;
+
 	default:
 		break;
 	}
@@ -228,6 +244,17 @@ static void stopwatchState(EWatch *this, enum EWatchSignal sig)
 	}
 }
 
+static void alarmState(EWatch *this, enum EWatchSignal sig)
+{
+	switch (sig) {
+	case EW_ALARM_MODE_SIG:
+		this->alarmState = ALARM_ON;
+		break;
+	default:
+		break;
+	}
+}
+
 static void updateOutput(EWatch *this, enum EWatchMode mode)
 {
 	switch (mode) {
@@ -250,6 +277,14 @@ static void updateOutput(EWatch *this, enum EWatchMode mode)
 		this->minutes = EWatchStopwatch_GetMinutes(&this->stopwatch);
 		this->seconds = EWatchStopwatch_GetSeconds(&this->stopwatch);
 		this->tenths = EWatchStopwatch_GetTenths(&this->stopwatch);
+		break;
+
+	case ALARM_MODE:
+		this->hours = 12; 
+		this->minutes = 0;
+		this->seconds = 0;
+		this->tenths = 0;
+		this->alarmState = EWatchAlarm_GetAlarmState(&this->alarm);
 		break;
 
 	default:
