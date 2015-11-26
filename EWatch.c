@@ -248,8 +248,35 @@ static void alarmState(EWatch *this, enum EWatchSignal sig)
 {
 	switch (sig) {
 	case EW_ALARM_MODE_SIG:
-		this->alarmState = ALARM_ON;
+		EWatchAlarm_Dispatch(&this->alarm, AL_ALARM_SET_SIG);
+		updateOutput(this, ALARM_MODE);
 		break;
+
+	case EW_BUTTON_P_SIG:
+		EWatchAlarm_Dispatch(&this->alarm, AL_INC_SIG);
+		updateOutput(this, ALARM_MODE);
+		break;
+
+	case EW_BUTTON_M_SIG:
+		EWatchAlarm_Dispatch(&this->alarm, AL_DEC_SIG);
+		updateOutput(this, ALARM_MODE);
+		break;
+
+	case EW_STOPWATCH_MODE_SIG:
+		transition(this, STOPWATCH_STATE);
+		updateOutput(this, STOPWATCH_MODE);
+		break;
+
+	case EW_CLOCK_MODE_SIG:
+		transition(this, CLOCK_STATE);
+		updateOutput(this, CLOCK_MODE);
+		break;
+
+	case EW_TIMESET_MODE_SIG:
+		transition(this, TIMESET_STATE);
+		updateOutput(this, TIMESET_MODE);
+		break;
+
 	default:
 		break;
 	}
@@ -280,8 +307,8 @@ static void updateOutput(EWatch *this, enum EWatchMode mode)
 		break;
 
 	case ALARM_MODE:
-		this->hours = 12; 
-		this->minutes = 0;
+		this->hours = EWatchAlarm_GetHours(&this->alarm); 
+		this->minutes = EWatchAlarm_GetMinutes(&this->alarm);
 		this->seconds = 0;
 		this->tenths = 0;
 		this->alarmState = EWatchAlarm_GetAlarmState(&this->alarm);

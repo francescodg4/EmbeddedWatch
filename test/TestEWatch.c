@@ -348,7 +348,7 @@ void test_SwitchToAlarmModeShowsCurrentAlarm(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
 }
 
-void test_ThreeAlarmSetSignalsSetTheAlarm(void)
+void test_FourAlarmSetSignalsSetTheAlarm(void)
 {
 	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Enters in alarm mode (does nothing)
 
@@ -382,4 +382,3 @@ void test_EnteringInSetAlarmModeAndSetHoursAndSeconds(void)
 
 	TEST_ASSERT_EQUAL_STRING("Mode:1 13:58:0 0 off", out);
 }
-
