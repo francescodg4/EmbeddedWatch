@@ -45,6 +45,8 @@ void EWatchStopwatch_Dispatch(EWatchStopwatch *this, enum EWatchStopwatchSignal 
 
 		case ST_RESET_SIG:
 			reset(this);
+			break;
+
 		default:
 			break;
 		}

@@ -19,6 +19,15 @@ static void output(EWatch *w, char *out)
 	snprintf(out, OUT_SIZE, "Mode:%d %d:%d:%d %d", mode, hours, minutes, seconds, tenths);
 }
 
+static void waitFor(int hours, int minutes, int seconds, int tenths)
+{
+	int i, ticks;
+	ticks = convertToTenths(hours, minutes, seconds, tenths);
+
+	for (i = 0; i < ticks; i++)
+		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+}
+
 void setUp(void)
 {
 	EWatch_Init(&watch);
@@ -47,7 +56,8 @@ void test_ReceivingClockTickEvent(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:0 13:23:22 0", out);	
 }
 
-void test_SwitchToStopwatchMode(void)
+// --------------- Stopwatch tests --------------- //
+void test_StopwatchModeIntialStateAllZero(void)
 {
 	int i;
 	for (i = 0; i < 800; i++)
@@ -60,7 +70,7 @@ void test_SwitchToStopwatchMode(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:0 0", out);
 }
 
-void test_InStopwatchModeCheckIfStopwatchIsWorking(void)
+void test_StartStopwatchAndUpdateOutput(void)
 {
 	int ticks = convertToTicks(0, 0, 2, 9);
 
@@ -74,6 +84,23 @@ void test_InStopwatchModeCheckIfStopwatchIsWorking(void)
 	output(&watch, out);
 
 	TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:2 9", out);
+}
+
+void test_CanResetStopwatchOnlyWhenStopped(void)
+{
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+
+	waitFor(0, 20, 12, 0);
+	
+	EWatch_Dispatch(&watch, EW_BUTTON_M_SIG); // Ignore BUTTON_M
+ 
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG); // Stop
+	EWatch_Dispatch(&watch, EW_BUTTON_M_SIG); // Reset
+	
+	output(&watch, out);
+	
+	TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:0 0", out);
 }
 
 void test_TimeIsRunningEvenIfWeAreInStopwatchMode(void)
@@ -113,33 +140,29 @@ void test_TimeIsRunningEvenIfWeAreInStopwatchMode(void)
 
 void test_StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)
 {
-	// Switch to stopwatch mode
-	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
-	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG); 
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG); // Start Stopwatch
 
-	int ticks = convertToTicks(0, 12, 20, 9);
+	waitFor(0, 12, 20, 9);
+	
+	EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG); // Switch to Clock mode	
 
-	int i;
-	for (i = 0; i < ticks - 1; i++)
-		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+	waitFor(0, 0, 10, 0);
 
-	EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);	
-	EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
-	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG); // Switch back to stopwatch
 
 	output(&watch, out);
-	TEST_ASSERT_EQUAL_STRING("Mode:2 0:12:20 9", out);
+
+	TEST_ASSERT_EQUAL_STRING("Mode:2 0:12:30 9", out);
 }
 
-void test_EntersInSetClockMode(void)
+// --------------- Timeset mode --------------- //
+void test_TimesetModeInitializedWithCurrentTime(void)
 {
-	int ticks = convertToTicks(0, 20, 2, 0);
+	waitFor(0, 20, 2, 0);
 
-	int i;
-	for (i = 0; i < ticks; i++)
-		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
-    
 	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+
 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 
@@ -148,11 +171,10 @@ void test_EntersInSetClockMode(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:3 2:20:0 0", out);
 }
 
-void test_SwitchToTimesetModeThanToClockMode(void)
+void test_SetClockWhenSwitchViewBackToClockMode(void)
 {
-	int ticks = convertToTicks(2, 4, 11, 7);
-	
-	EWatchClock_Set(&watch.clock, ticks);
+	int time = convertToTicks(2, 4, 11, 7);	
+	EWatchClock_Set(&watch.clock, time);
 	
 	// Add 1 hour
 	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
@@ -160,7 +182,6 @@ void test_SwitchToTimesetModeThanToClockMode(void)
 	
 	// Add 30 minutes
 	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
-
 	int i;
 	for (i = 0; i < 30; i++)
 		EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
@@ -174,17 +195,14 @@ void test_SwitchToTimesetModeThanToClockMode(void)
 
 void test_SwitchToTimesetModeAndDecrementHoursAndMinutes(void)
 {	
-	EWatchClock_Set(&watch.clock, convertToTenths(12, 34, 0, 1));
-	
-	// Switch to timeset mode
+	EWatchClock_Set(&watch.clock, convertToTenths(12, 34, 0, 1));	
 	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
 	       
 	// Decrement 1 h
 	EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
 	
         // Switch to minutes mode and decrement
-	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
-	
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);	
 	int i;
 	for (i = 0; i < 30; i++)
 		EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
@@ -209,8 +227,7 @@ void test_ReturningToHoursAfterMinutesChangedIsAllowed(void)
 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 	
         // Switch to minutes mode and decrement
-	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
-	
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);	
 	int i;
 	for (i = 0; i < 3; i++)
 		EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
@@ -235,17 +252,14 @@ void test_ClockTicksDoesNotAffectTimeset(void)
 	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
 	
 	// Clock is ticking...
-	int ticks = convertToTenths(0, 0, 25, 8);
-	int i;
-	for (i = 0; i < ticks; i++)
-		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+	waitFor(0, 0, 25, 8);
 
 	// Hours + 1
 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 
 	// Switch to minutes mode
 	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
-
+	int i;
 	// Minute + 30
 	for (i = 0; i < 30; i++)
 		EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
@@ -258,15 +272,6 @@ void test_ClockTicksDoesNotAffectTimeset(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:0 14:0:0 0", out);
 }
 	
-static void waitFor(int hours, int minutes, int seconds, int tenths)
-{
-	int i, ticks;
-	ticks = convertToTenths(hours, minutes, seconds, tenths);
-
-	for (i = 0; i < ticks; i++)
-		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
-}
-
 void test_SwitchToTimesetFromStopwatchMode(void)
 {
 	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
@@ -284,12 +289,14 @@ void test_SwitchToTimesetFromStopwatchMode(void)
 void test_AlwaysCopyTheCurrentValueOfTimeWhenInTimesetMode(void)
 {
 	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+
+	// Switch to stopwatch mode
  	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
-  	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+  	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG); // Start stopwatch
 
 	waitFor(12, 22, 31, 5);
 
- 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+ 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG); // Stop stopwatch
 	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
 
 	output(&watch, out);
