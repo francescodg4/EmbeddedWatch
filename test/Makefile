@@ -4,7 +4,7 @@ LDFLAGS = -Lunity -lunity
 
 # # --------------- EWatch
 EWATCH_TARGET := testEWatch
-EWATCH_SRC := ../EWatch.c ../EWatchClock.c ../EWatchStopwatch.c ../ClockCounter.c ../EWatchTimeset.c 
+EWATCH_SRC := ../EWatch.c ../EWatchClock.c ../EWatchStopwatch.c ../ClockCounter.c ../EWatchTimeset.c ../EWatchAlarm.c
 EWATCH_TEST := TestEWatch.c
 
 # Generate runner file
