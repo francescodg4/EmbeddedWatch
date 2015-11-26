@@ -3,7 +3,7 @@
 declare -A test
 # ["st"]="make EWatchStopwatch; ./testEWatchStopwatch" 
 test=( 
-    ["a"]="make testEWatchAlarm && ./testAlarm"
+    ["a"]="make testEWatchAlarm && ./testEWatchAlarm"
     ["st"]="make testEWatchStopwatch && ./testEWatchStopwatch"
     ["c"]="make testEWatchClock && ./testEWatchClock"
     ["cc"]="make testEWatch && ./testEWatch"
