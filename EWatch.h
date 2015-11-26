@@ -19,8 +19,10 @@ enum EWatchSignal {
 // enum EWatchControlSignal {SET_ALARM_MODE = 3, SET_CLOCK_MODE};
 enum EWatchMode {CLOCK_MODE, STOPWATCH_MODE, ALARM_MODE, TIMESET_MODE};
 enum EWatchState {CLOCK_STATE, ALARM_STATE, STOPWATCH_STATE, TIMESET_STATE};
+ 
+typedef struct EWatch_ EWatch;
 
-typedef struct {
+struct EWatch_ {
 	int hours;
 	int minutes;
 	int seconds;
@@ -31,8 +33,9 @@ typedef struct {
 	// EWatchControl control;
 	EWatchClock clock;
 	EWatchStopwatch stopwatch;
-	void (*state) (EWatch *, enum EWatchSignal);
-} EWatch;
+	void (*state)(EWatch *, enum EWatchSignal);
+	// State state;
+};
 
 void EWatch_Init(EWatch *this);
 int EWatch_GetHours(EWatch *this);
