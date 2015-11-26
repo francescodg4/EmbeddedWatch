@@ -5,6 +5,7 @@ void EWatchAlarm_Init(EWatchAlarm *this)
 	unsigned int defaultTime = convertToTenths(12, 0, 0, 0);
 	ClockCounter_Init(&this->alarmCounter);
 	ClockCounter_Set(&this->alarmCounter, defaultTime);
+	this->alarmState = ALARM_OFF;
 }
 
 int EWatchAlarm_GetHours(EWatchAlarm *this)
@@ -15,4 +16,9 @@ int EWatchAlarm_GetHours(EWatchAlarm *this)
 int EWatchAlarm_GetMinutes(EWatchAlarm *this)
 {
 	return ClockCounter_GetMinutes(&this->alarmCounter);
+}
+
+enum AlarmState EWatchAlarm_GetAlarmState(EWatchAlarm *this)
+{
+	return this->alarmState;
 }
