@@ -280,3 +280,8 @@ void test_SwitchToTimesetFromArbitraryState(void)
 
 	TEST_ASSERT_EQUAL_STRING("Mode:3 0:12:0 0", out);	
 }
+
+/* void test_EntryActionCopyingValueOfClockWhenEnteringTimesetState(void) */
+/* { */
+/* 	EWatch_Dispatch(&watch, EW_ */
+/* } */

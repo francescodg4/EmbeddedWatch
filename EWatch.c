@@ -34,23 +34,25 @@ void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
  		EWatchStopwatch_Dispatch(&this->stopwatch, ST_CLOCK_TICK_SIG);
 	}
 
-	switch (this->state) {
+ 	(*this->state)(this, sig);
 
-	case CLOCK_STATE:
-		clockState(this, sig);		
-		break;
+	/* switch (this->state) { */
 
-	case STOPWATCH_STATE:
-		stopwatchState(this, sig);
-		break;
+	/* case CLOCK_STATE: */
+	/* 	clockState(this, sig);		 */
+	/* 	break; */
 
-	case TIMESET_STATE:
-		timesetState(this, sig);
-		break;
+	/* case STOPWATCH_STATE: */
+	/* 	stopwatchState(this, sig); */
+	/* 	break; */
 
-	default:
-		break;
-	}
+	/* case TIMESET_STATE: */
+	/* 	timesetState(this, sig); */
+	/* 	break; */
+
+	/* default: */
+	/* 	break; */
+	// }
 }
 
 int EWatch_GetHours(EWatch *this)
@@ -83,7 +85,25 @@ enum EWatchMode EWatch_GetMode(EWatch *this)
 
 static void transition(EWatch *this, enum EWatchState state)
 {
-	this->state = state;
+
+	switch (state) {
+
+	case CLOCK_STATE:
+	        this->state = clockState;
+		break;
+
+	case STOPWATCH_STATE:
+		this->state = stopwatchState;
+		break;
+
+	case TIMESET_STATE:
+		this->state = timesetState;
+		break;
+
+	default:
+		break;
+	}
+// 		this->state = state;
 }
 
 static void timesetState(EWatch *this, enum EWatchSignal sig)
@@ -108,9 +128,9 @@ static void timesetState(EWatch *this, enum EWatchSignal sig)
 		transition(this, CLOCK_STATE);
 
 		/* Update clock */
-		int hours = EWatchTimeset_GetHours(&timeset);
-		int minutes = EWatchTimeset_GetMinutes(&timeset);		
-		EWatchClock_Set(&this->clock, convertToTenths(hours, minutes, 0, 0));
+ 		/* int hours = EWatchTimeset_GetHours(&timeset); */
+		/* int minutes = EWatchTimeset_GetMinutes(&timeset);		 */
+		/* EWatchClock_Set(&this->clock, convertToTenths(hours, minutes, 0, 0)); */
 
 		updateOutput(this, CLOCK_MODE);
 	default:
