@@ -382,3 +382,27 @@ void test_EnteringInSetAlarmModeAndSetHoursAndSeconds(void)
 
 	TEST_ASSERT_EQUAL_STRING("Mode:1 13:58:0 0 off", out);
 }
+
+void test_StartAlarmAtTime(void)
+{
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+	
+	// Add 1 hour
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+	
+	// Add 30 minutes
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+
+	int i;
+	for (i = 0; i < 30; i++)
+		EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+
+	output2(&watch, ALARM_MODE, out);
+	TEST_ASSERT_EQUAL_STRING("Mode:1 13:30:0 0 off", out);
+
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+
+	output2(&watch, ALARM_MODE, out);
+	TEST_ASSERT_EQUAL_STRING("Mode:1 13:30:0 0 on", out);
+}
