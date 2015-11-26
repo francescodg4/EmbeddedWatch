@@ -363,7 +363,7 @@ void test_FourAlarmSetSignalsSetTheAlarm(void)
 }
 
 void test_EnteringInSetAlarmModeAndSetHoursAndSeconds(void)
-{	
+{
 	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Enters in alarm mode (does nothing)
 
 	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // -> Enters in Setting -> Set hours

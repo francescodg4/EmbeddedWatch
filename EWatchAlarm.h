@@ -2,6 +2,7 @@
 #define EWATCHALARM_H
 
 #include "ClockCounter.h"
+#include "EWatchTimeset.h"
 
 enum AlarmState {ALARM_OFF, ALARM_ON, ALARM_EXPIRED};
 enum EWatchAlarmSignal {AL_ALARM_SET_SIG, AL_CLOCK_TICK_SIG, AL_INC_SIG, AL_DEC_SIG};
@@ -16,7 +17,7 @@ enum EWatchAlarmState {
 
 typedef struct {
 	ClockCounter alarmCounter;
-	ClockCounter expirationTime;
+	EWatchTimeset expirationTime;
 	ClockCounter *external;
 	enum AlarmState alarmState;
 	enum EWatchAlarmState state;	
