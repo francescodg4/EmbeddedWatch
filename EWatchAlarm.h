@@ -9,14 +9,13 @@ enum EWatchAlarmState {AL_ALARM_OFF_STATE, AL_ALARM_ON_STATE, AL_ALARM_EXPIRED_S
 
 typedef struct {
 	ClockCounter alarmCounter;
-	ClockCounter finalCounter;
+	ClockCounter expirationTime;
 	ClockCounter *external;
 	enum AlarmState alarmState;
 	enum EWatchAlarmState state;	
 } EWatchAlarm;
 
-void EWatchAlarm_Init2(EWatchAlarm *this, ClockCounter *external);
-void EWatchAlarm_Init(EWatchAlarm *this);
+void EWatchAlarm_Init(EWatchAlarm *this, ClockCounter *external);
 void EWatchAlarm_Dispatch(EWatchAlarm *this, enum EWatchAlarmSignal sig);
 
 enum AlarmState EWatchAlarm_GetAlarmState(EWatchAlarm *this);
