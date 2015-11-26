@@ -57,7 +57,7 @@ void test_SwitchToStopwatchMode(void)
 
 	output(&watch, out);
 	
-	TEST_ASSERT_EQUAL_STRING("Mode:1 0:0:0 0", out);
+	TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:0 0", out);
 }
 
 void test_InStopwatchModeCheckIfStopwatchIsWorking(void)
@@ -73,7 +73,7 @@ void test_InStopwatchModeCheckIfStopwatchIsWorking(void)
 
 	output(&watch, out);
 
-	TEST_ASSERT_EQUAL_STRING("Mode:1 0:0:2 9", out);
+	TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:2 9", out);
 }
 
 void test_TimeIsRunningEvenIfWeAreInStopwatchMode(void)
@@ -107,7 +107,7 @@ void test_TimeIsRunningEvenIfWeAreInStopwatchMode(void)
 	
 	output(&watch, clockOutput);
 	
-	TEST_ASSERT_EQUAL_STRING("Mode:1 0:0:20 0", stopwatchOutput);
+	TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:20 0", stopwatchOutput);
 	TEST_ASSERT_EQUAL_STRING("Mode:0 12:15:50 1", clockOutput);
 }
 
@@ -128,7 +128,7 @@ void test_StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)
 	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
 
 	output(&watch, out);
-	TEST_ASSERT_EQUAL_STRING("Mode:1 0:12:20 9", out);
+	TEST_ASSERT_EQUAL_STRING("Mode:2 0:12:20 9", out);
 }
 
 void test_EntersInSetClockMode(void)
@@ -267,7 +267,7 @@ static void waitFor(int hours, int minutes, int seconds, int tenths)
 		EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
 }
 
-void test_SwitchToTimesetFromArbitraryState(void)
+void test_SwitchToTimesetFromStopwatchMode(void)
 {
 	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
@@ -281,7 +281,18 @@ void test_SwitchToTimesetFromArbitraryState(void)
 	TEST_ASSERT_EQUAL_STRING("Mode:3 0:12:0 0", out);	
 }
 
-/* void test_EntryActionCopyingValueOfClockWhenEnteringTimesetState(void) */
-/* { */
-/* 	EWatch_Dispatch(&watch, EW_ */
-/* } */
+void test_AlwaysCopyTheCurrentValueOfTimeWhenInTimesetMode(void)
+{
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+ 	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
+  	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+
+	waitFor(12, 22, 31, 5);
+
+ 	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+	EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+
+	output(&watch, out);
+	
+	TEST_ASSERT_EQUAL_STRING("Mode:3 12:22:0 0", out);
+}
