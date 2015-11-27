@@ -87,7 +87,7 @@ enum EWatchMode EWatch_GetMode(EWatch *this)
 
 enum AlarmState EWatch_GetAlarmState(EWatch *this)
 {
-	return this->alarmState;
+	return EWatchAlarm_GetAlarmState(&this->alarm);
 }
 
 // --------------- Private functions --------------- //
@@ -311,13 +311,13 @@ static void updateOutput(EWatch *this, enum EWatchMode mode)
 		this->minutes = EWatchAlarm_GetMinutes(&this->alarm);
 		this->seconds = 0;
 		this->tenths = 0;
-		this->alarmState = EWatchAlarm_GetAlarmState(&this->alarm);
 		break;
 
 	default:
 		break;
 	}
 
+	this->alarmState = EWatchAlarm_GetAlarmState(&this->alarm);
 	this->mode = mode;
 }
 

@@ -39,7 +39,7 @@ void test_SwicthAlarmStateOnWhenSignalReceived(void)
 	
 	TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm));
 	
-	EWatchAlarm_Dispatch(&alarm, AL_ALARM_ON_SIG);
+	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
 	TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));       
 }
 
