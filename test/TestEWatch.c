@@ -404,9 +404,8 @@ void test_SwitchBetweenStates(void)
 void test_AlarmExpireWhenIsTimeFromAnyState(void)
 {
 	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // In alarm mode
-	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set hours
-	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set minutes
-	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set alarm
+
+	setAlarmTo(&watch.alarm, 12, 0);
 
 	output(&watch, out);
 	TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 on", out);
@@ -431,6 +430,41 @@ void test_AlarmExpireWhenIsTimeFromAnyState(void)
 
 void test_AlarmCanBeChangedAfterHasBeenTurnedOn(void)
 {
-	TEST_IGNORE();
+	enum AlarmState alarmState;
+
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+	setAlarmTo(&watch.alarm, 13, 30);
+
+	alarmState = EWatch_GetAlarmState(&watch);
+	TEST_ASSERT_EQUAL_MESSAGE(ALARM_ON, alarmState, "Expected ALARM_ON");
+
+	// Set alarm to different time
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Enters in set hour mode
+
+	alarmState = EWatch_GetAlarmState(&watch);
+	TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
+	
+	// Set hours
+	EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
+
+	// Set minutes
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set minutes mode
+	int i;
+	for (i = 0; i < 30; i++)
+		EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
+	
+	// Set new alarm
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+
+	alarmState = EWatch_GetAlarmState(&watch);
+	TEST_ASSERT_EQUAL_MESSAGE(ALARM_ON, alarmState, "Expected ALARM_ON");
+
+	TEST_ASSERT_EQUAL(14, EWatchAlarm_GetHours(&watch.alarm));
+	TEST_ASSERT_EQUAL(0, EWatchAlarm_GetMinutes(&watch.alarm));
+
+	waitFor(14, 0, 0, 0);
+
+	alarmState = EWatch_GetAlarmState(&watch);
+	TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
 }
 
