@@ -8,23 +8,9 @@
 static EWatch watch;
 static char out[OUT_SIZE];
 
-static void output2(EWatch *w, enum EWatchMode mode, char *out);
-static void output(EWatch *w, char *out)
+static void output(EWatch *w,char *out)
 {
-	output2(w, CLOCK_MODE, out);
-	/* int mode = EWatch_GetMode(w);
-	int hours = EWatch_GetHours(w);
-	int minutes = EWatch_GetMinutes(w);
-	int seconds = EWatch_GetSeconds(w);
-	int tenths = EWatch_GetTenths(w);
-
-	snprintf(out, OUT_SIZE, "Mode:%d %d:%d:%d %d", mode, hours, minutes, seconds, tenths);
-	*/
-}
-
-static void output2(EWatch *w, enum EWatchMode mode, char *out)
-{
-	int mode_ = EWatch_GetMode(w);
+	int mode = EWatch_GetMode(w);
 	int hours = EWatch_GetHours(w);
 	int minutes = EWatch_GetMinutes(w);
 	int seconds = EWatch_GetSeconds(w);
@@ -35,13 +21,6 @@ static void output2(EWatch *w, enum EWatchMode mode, char *out)
 	const char *alarmSS = alarmStates[alarmState];
 
 	switch (mode) {
-	case CLOCK_MODE:
-	case STOPWATCH_MODE:
-	case TIMESET_MODE:
-		snprintf(out, OUT_SIZE,
-			 "Mode:%d %d:%d:%d %d", mode_, hours, minutes, seconds, tenths);
-		break;
-
 	case ALARM_MODE:
 		snprintf(out, OUT_SIZE,
 			 "Mode:%d %d:%d:%d %d %s",
@@ -49,8 +28,10 @@ static void output2(EWatch *w, enum EWatchMode mode, char *out)
 		break;
 
 	default:
+		snprintf(out, OUT_SIZE,
+			 "Mode:%d %d:%d:%d %d", mode, hours, minutes, seconds, tenths);
 		break;
-		}
+	}
 }
 
 static void waitFor(int hours, int minutes, int seconds, int tenths)
@@ -345,7 +326,7 @@ void test_SwitchToAlarmModeShowsCurrentAlarm(void)
 {
 	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
 	
-	output2(&watch, ALARM_MODE, out);
+	output(&watch, out);
 
 	TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
 }
@@ -359,7 +340,7 @@ void test_FourAlarmSetSignalsSetTheAlarm(void)
 
 	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set alarm
 
-	output2(&watch, ALARM_MODE, out);
+	output(&watch, out);
 
 	TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 on", out);
 }
@@ -380,7 +361,7 @@ void test_EnteringInSetAlarmModeAndSetHoursAndSeconds(void)
 	EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
 	EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
 
-	output2(&watch, ALARM_MODE, out);
+	output(&watch, out);
 
 	TEST_ASSERT_EQUAL_STRING("Mode:1 13:58:0 0 off", out);
 }
@@ -400,11 +381,56 @@ void test_StartAlarmAtTime(void)
 	for (i = 0; i < 30; i++)
 		EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 
-	output2(&watch, ALARM_MODE, out);
+	output(&watch, out);
 	TEST_ASSERT_EQUAL_STRING("Mode:1 13:30:0 0 off", out);
 
 	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
 
-	output2(&watch, ALARM_MODE, out);
+	output(&watch, out);
 	TEST_ASSERT_EQUAL_STRING("Mode:1 13:30:0 0 on", out);
 }
+
+void test_SwitchBetweenStates(void)
+{
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+
+	output(&watch, out);
+
+	TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
+}
+
+void test_AlarmExpireWhenIsTimeFromAnyState(void)
+{
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // In alarm mode
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set hours
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set minutes
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set alarm
+
+	output(&watch, out);
+	TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 on", out);
+
+	EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
+	
+	waitFor(11, 59, 59, 9);
+
+	EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);	
+
+	output(&watch, out);
+	
+	TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 expired", out);
+
+	EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Switch alarm off	
+
+	output(&watch, out);
+	
+	TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
+}
+
+void test_AlarmCanBeChangedAfterHasBeenTurnedOn(void)
+{
+	TEST_IGNORE();
+}
+
