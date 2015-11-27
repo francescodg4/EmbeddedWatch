@@ -75,7 +75,6 @@ void test_IntializationAsClockMode(void)
 
 	output(&watch, out);
 
-	const char *out = "Helloo";
 	TEST_ASSERT_EQUAL_STRING("Mode:0 0:0:0 0", out);
 }
 

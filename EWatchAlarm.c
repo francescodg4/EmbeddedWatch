@@ -1,20 +1,19 @@
 #include "EWatchAlarm.h"
 #include "EWatchTimeset.h"
 
-// static EWatchTimeset timeset;
-// static void transition(EWatchAlarm *this, enum EWatchAlarmState state);
 static void transition(EWatchAlarm *this, EWatchAlarmState state);
 
 static void alarmOffState(EWatchAlarm *this, enum EWatchAlarmSignal sig);
 static void alarmOnState(EWatchAlarm *this, enum EWatchAlarmSignal sig);
 static void alarmExpiredState(EWatchAlarm *this, enum EWatchAlarmSignal sig);
-static void alarmSetHoursState(EWatchAlarm *this, enum EWatchAlarmSignal sig);
-static void alarmSetMinutesState(EWatchAlarm *this, enum EWatchAlarmSignal sig);
+
+static void setHoursState(EWatchAlarm *this, enum EWatchAlarmSignal sig);
+static void setMinutesState(EWatchAlarm *this, enum EWatchAlarmSignal sig);
 
 void EWatchAlarm_Init(EWatchAlarm *this, ClockCounter *external)
 {
 	unsigned int defaultTime = convertToTenths(12, 0, 0, 0);
-	// ClockCounter_Set(&this->expirationTime, defaultTime);
+
 	EWatchTimeset_Init(&this->expirationTime);
 	EWatchTimeset_Set(&this->expirationTime, defaultTime);
 
@@ -26,96 +25,7 @@ void EWatchAlarm_Init(EWatchAlarm *this, ClockCounter *external)
 
 void EWatchAlarm_Dispatch(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 {
-	// unsigned int prevExpirationTime;
-
 	(*this->state)(this, sig);
-
-	/* switch (this->state) { */
-	/* case AL_ALARM_OFF_STATE: */
-	/* 	switch (sig) { */
-	/* 	case AL_ALARM_SET_SIG: */
-	/* 		transition(this, AL_SET_ALARM_HOURS_STATE); */
-
-	/* 		// prevExpirationTime = ClockCounter_GetCount(&this->expirationTime); */
-	/* 		// EWatchTimeset_Init(&timeset); */
-	/* 		// EWatchTimeset_Set(&this->expirationTime, prevExpirationTime); */
-
-	/* 		break; */
-
-	/* 	default: */
-	/* 		break; */
-	/* 	} */
-
-	/* 	break; */
-
-	/* case AL_SET_ALARM_HOURS_STATE: */
-	/* 	switch (sig) { */
-
-	/* 	case AL_INC_SIG: */
-	/* 		EWatchTimeset_Dispatch(&this->expirationTime, TS_INC_SIG); */
-	/* 		break; */
-
-	/* 	case AL_DEC_SIG: */
-	/* 		EWatchTimeset_Dispatch(&this->expirationTime, TS_DEC_SIG); */
-	/* 		break; */
-
-	/* 	case AL_ALARM_SET_SIG: */
-	/* 		EWatchTimeset_Dispatch(&this->expirationTime, TS_TOGGLE_MODE_SIG); */
-	/* 		transition(this, AL_SET_ALARM_MINUTES_STATE); */
-	/* 		break; */
-
-	/* 	default: */
-	/* 		break; */
-	/* 	} */
-
-	/* 	break; */
-
-	/* case AL_SET_ALARM_MINUTES_STATE: */
-	/* 	switch (sig) { */
-
-	/* 	case AL_INC_SIG: */
-	/* 		EWatchTimeset_Dispatch(&this->expirationTime, TS_INC_SIG); */
-	/* 		break; */
-
-	/* 	case AL_DEC_SIG: */
-	/* 		EWatchTimeset_Dispatch(&this->expirationTime, TS_DEC_SIG); */
-	/* 		break; */
-
-	/* 	case AL_ALARM_SET_SIG: */
-	/* 		transition(this, AL_ALARM_ON_STATE); */
-	/* 		this->alarmState = ALARM_ON; */
-	/* 		break; */
-
-	/* 	default: */
-	/* 		break; */
-	/* 	}		 */
-
-	/* 	break; */
-
-	/* case AL_ALARM_ON_STATE: */
-	/* 	switch (sig) { */
-	/* 	case AL_CLOCK_TICK_SIG: */
-	/* 		/\* */
-	/* 		if (ClockCounter_GetCount(this->external) ==  */
-	/* 		    ClockCounter_GetCount(&this->expirationTime)) { */
-	/* 			transition(this, AL_ALARM_EXPIRED_STATE); */
-	/* 			this->alarmState = ALARM_EXPIRED; */
-	/* 		} */
-	/* 		*\/ */
-	/* 		break; */
-		
-	/* 	default: */
-	/* 		break; */
-	/* 	} */
-
-	/* 	break; */
-
-	/* case AL_ALARM_EXPIRED_STATE: */
-	/* 	break; */
-
-	/* default: */
-	/* 	break; */
-	/* } */
 }
 
 int EWatchAlarm_GetHours(EWatchAlarm *this)
@@ -142,7 +52,7 @@ static void alarmOffState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 {
 	switch (sig) {
 	case AL_ALARM_SET_SIG:
-		transition(this, alarmSetHoursState);
+		transition(this, setHoursState);
 
 		// prevExpirationTime = ClockCounter_GetCount(&this->expirationTime);
 		// EWatchTimeset_Init(&timeset);
@@ -159,13 +69,11 @@ static void alarmOnState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 {
 	switch (sig) {
 	case AL_CLOCK_TICK_SIG:
-		/*
 		  if (ClockCounter_GetCount(this->external) ==
-		  ClockCounter_GetCount(&this->expirationTime)) {
-		  transition(this, AL_ALARM_EXPIRED_STATE);
-		  this->alarmState = ALARM_EXPIRED;
+		  EWatchTimeset_GetCount(&this->expirationTime)) {
+			  transition(this, alarmExpiredState);
+			  this->alarmState = ALARM_EXPIRED;
 		  }
-		*/
 		break;
 		
 	default:
@@ -177,7 +85,7 @@ static void alarmExpiredState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 {
 }
 
-static void alarmSetHoursState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
+static void setHoursState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 {
 	switch (sig) {
 
@@ -191,7 +99,7 @@ static void alarmSetHoursState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 
 	case AL_ALARM_SET_SIG:
 		EWatchTimeset_Dispatch(&this->expirationTime, TS_TOGGLE_MODE_SIG);
-		transition(this, alarmSetMinutesState);
+		transition(this, setMinutesState);
 		break;
 
 	default:
@@ -199,7 +107,7 @@ static void alarmSetHoursState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 	}
 }
 
-static void alarmSetMinutesState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
+static void setMinutesState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 {
 	switch (sig) {
 
@@ -220,28 +128,3 @@ static void alarmSetMinutesState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 		break;
 	}
 }
-
-
-	/* switch (this->state) { */
-	/* case AL_ALARM_OFF_STATE: */
-
-	/* 	break; */
-
-	
-	/* 	break; */
-
-	/* case AL_SET_ALARM_MINUTES_STATE: */
-	/* 	}		 */
-
-	/* 	break; */
-
-	/* case AL_ALARM_ON_STATE: */
-
-	/* 	break; */
-
-	/* case AL_ALARM_EXPIRED_STATE: */
-	/* 	break; */
-
-	/* default: */
-	/* 	break; */
-	/* } */

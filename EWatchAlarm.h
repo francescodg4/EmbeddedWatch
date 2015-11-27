@@ -7,15 +7,6 @@
 enum AlarmState {ALARM_OFF, ALARM_ON, ALARM_EXPIRED};
 enum EWatchAlarmSignal {AL_ALARM_SET_SIG, AL_CLOCK_TICK_SIG, AL_INC_SIG, AL_DEC_SIG};
 
-
-/* enum EWatchAlarmState { */
-/* 	AL_ALARM_OFF_STATE, */
-/* 	AL_ALARM_ON_STATE, */
-/* 	AL_ALARM_EXPIRED_STATE, */
-/* 	AL_SET_ALARM_HOURS_STATE, */
-/* 	AL_SET_ALARM_MINUTES_STATE */
-/* }; */
-
 typedef struct EWatchAlarm_ EWatchAlarm;
 typedef void (*EWatchAlarmState)(EWatchAlarm *, enum EWatchAlarmSignal);
 
@@ -24,8 +15,6 @@ struct EWatchAlarm_ {
 	EWatchTimeset expirationTime;
 	ClockCounter *external;
 	enum AlarmState alarmState;
-//	enum EWatchAlarmState state;
-	// void (*state)(EWatchAlarm *, enum EWatchAlarmSignal);
 	EWatchAlarmState state;
 };
 
