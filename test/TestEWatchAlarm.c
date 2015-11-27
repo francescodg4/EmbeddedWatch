@@ -4,6 +4,24 @@
 static EWatchAlarm alarm;
 static ClockCounter external;
 
+static void setAlarmTo(EWatchAlarm *a, int hours, int minutes)
+{	
+	EWatchTimeset_Set(&a->expirationTime, 0);
+
+	EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set hours
+	   
+	int i;
+	for (i = 0; i < hours; i++)
+		EWatchAlarm_Dispatch(a, AL_INC_SIG);	
+	
+	EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set minutes
+
+	for (i = 0; i < minutes; i++)
+		EWatchAlarm_Dispatch(a, AL_INC_SIG);
+	
+	EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set alarm
+}
+
 static void waitFor(int hours, int minutes, int seconds, int tenths)
 {
 	int ticks = convertToTicks(12, 0, 0, 0);
@@ -32,6 +50,15 @@ void test_InitializeWithDefaultAlarmAt12(void)
 	TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm));
 }
 
+void test_SetAlarmToTime(void)
+{
+	setAlarmTo(&alarm, 11, 0);
+
+	TEST_ASSERT_EQUAL(11, EWatchTimeset_GetHours(&alarm.expirationTime));
+	TEST_ASSERT_EQUAL(0, EWatchAlarm_GetMinutes(&alarm));
+	TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));
+}
+
 void test_SwicthAlarmStateOnWhenSignalReceived(void)
 {
 	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
@@ -43,30 +70,9 @@ void test_SwicthAlarmStateOnWhenSignalReceived(void)
 	TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));       
 }
 
-static void setAlarmTo(EWatchAlarm *a, int hours, int minutes)
-{	
-	EWatchTimeset_Set(&a->expirationTime, 0);
-
-	int i;
-	EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set hours
-
-	for (i = 0; i < hours; i++)
-		EWatchAlarm_Dispatch(a, AL_INC_SIG);
-	
-	EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set minutes
-
-	for (i = 0; i < minutes; i++)
-		EWatchAlarm_Dispatch(a, AL_INC_SIG);
-	
-	EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set alarm
-}
-
 void test_SetAlarmWaitForTicksAndExpire(void)
 {
 	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Switch to alarm
-	/* EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Set hours */
-	/* EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Set minutes */
-	/* EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Set alarm */
 
 	setAlarmTo(&alarm, 12, 0);
 
@@ -83,10 +89,12 @@ void test_SetAlarmWaitForTicksAndExpire(void)
 void test_AlarmWillExpireIfExternalTimeIsChanged(void)
 {
 	ClockCounter_Set(&external, convertToTenths(11, 59, 59, 9));
-
-	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Switch to alarm
    
 	setAlarmTo(&alarm, 12, 0);
+
+	unsigned int twelve = EWatchTimeset_GetCount(&alarm.expirationTime);
+	
+	TEST_ASSERT_EQUAL(convertToTenths(12, 0, 0, 0), twelve);
 
 	ClockCounter_Tick(&external);
 	EWatchAlarm_Dispatch(&alarm, AL_CLOCK_TICK_SIG);
@@ -100,17 +108,27 @@ void test_AlarmIsNotYetExpired(void)
 {
 	ClockCounter_Set(&external, convertToTenths(11, 59, 59, 8));
 	
-	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
-       
-	ClockCounter_Tick(&external);
-	EWatchAlarm_Dispatch(&alarm, AL_CLOCK_TICK_SIG);
-	
+	waitFor(0, 0, 0, 1);
+
 	enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
 	
-	TEST_ASSERT_EQUAL_MESSAGE(ALARM_ON, alarmState, "Expected ALARM_ON");
+	TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
 }
 
-/* void test_SetAlarmTo11am(void) */
-/* { */
-/* 	EWatchAlarm_Dispatch(&alarm, */
-/* } */
+void test_SwitchAlarmOffWhenExpired(void)
+{
+	ClockCounter_Set(&external, convertToTenths(5, 29, 0, 0));
+
+	setAlarmTo(&alarm, 5, 30);
+	
+	waitFor(0, 1, 0, 0);
+
+	enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
+
+	TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
+
+	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Shutdown
+	alarmState = EWatchAlarm_GetAlarmState(&alarm);
+
+	TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
+}
