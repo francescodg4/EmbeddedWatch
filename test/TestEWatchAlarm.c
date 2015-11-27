@@ -72,8 +72,6 @@ void test_SwicthAlarmStateOnWhenSignalReceived(void)
 
 void test_SetAlarmWaitForTicksAndExpire(void)
 {
-	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Switch to alarm
-
 	setAlarmTo(&alarm, 12, 0);
 
 	enum AlarmState prevState = EWatchAlarm_GetAlarmState(&alarm);

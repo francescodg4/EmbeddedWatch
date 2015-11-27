@@ -67,6 +67,8 @@ static void alarmOffState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 
 static void alarmOnState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 {
+	unsigned int prevExpirationTime;
+
 	switch (sig) {
 	case AL_CLOCK_TICK_SIG:
 		  if (ClockCounter_GetCount(this->external) ==
@@ -74,8 +76,18 @@ static void alarmOnState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 			  transition(this, alarmExpiredState);
 			  this->alarmState = ALARM_EXPIRED;
 		  }
+		  break;
+
+	case AL_ALARM_SET_SIG:		
+		transition(this, setHoursState);
+
+		prevExpirationTime = EWatchTimeset_GetCount(&this->expirationTime);
+		EWatchTimeset_Init(&this->expirationTime);
+		EWatchTimeset_Set(&this->expirationTime, prevExpirationTime); 
+
+		this->alarmState = ALARM_OFF;
 		break;
-		
+
 	default:
 		break;
 	}
