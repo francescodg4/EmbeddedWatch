@@ -83,6 +83,14 @@ static void alarmOnState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 
 static void alarmExpiredState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
 {
+	switch (sig) {
+	case AL_ALARM_SET_SIG:
+		this->alarmState = ALARM_OFF;
+		transition(this, alarmOffState);
+		break;
+	default:
+		break;
+	}
 }
 
 static void setHoursState(EWatchAlarm *this, enum EWatchAlarmSignal sig)
