@@ -36,6 +36,7 @@ void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig)
 	if (sig == EW_CLOCK_TICK_SIG) {
 		EWatchClock_Dispatch(&this->clock, CLOCK_TICK);
  		EWatchStopwatch_Dispatch(&this->stopwatch, ST_CLOCK_TICK_SIG);
+		EWatchAlarm_Dispatch(&this->alarm, AL_CLOCK_TICK_SIG);
 	}
 
  	(*this->state)(this, sig);
@@ -173,6 +174,11 @@ static void timesetState(EWatch *this, enum EWatchSignal sig)
 		updateOutput(this, STOPWATCH_MODE);
 		break;
 
+	case EW_ALARM_MODE_SIG:
+		transition(this, ALARM_STATE);
+		updateOutput(this, ALARM_MODE);
+		break;
+
 	default:
 		break;
 	}	
@@ -237,6 +243,11 @@ static void stopwatchState(EWatch *this, enum EWatchSignal sig)
 	case EW_CLOCK_MODE_SIG:
 		transition(this, CLOCK_STATE);
 		updateOutput(this, CLOCK_MODE);
+		break;
+
+	case EW_ALARM_MODE_SIG:
+		transition(this, ALARM_STATE);
+		updateOutput(this, ALARM_MODE);
 		break;
 
 	default:
