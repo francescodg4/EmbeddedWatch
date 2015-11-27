@@ -44,7 +44,7 @@ $(STOPWATCH_TARGET): $(STOPWATCH_TEST_OBJS) $(STOPWATCH_OBJS) utility.o
 
 # --------------- EWatchAlarm
 ALARM_TARGET = testEWatchAlarm
-ALARM_SRC = ../EWatchAlarm.c ../ClockCounter.c
+ALARM_SRC = ../EWatchAlarm.c ../ClockCounter.c ../EWatchTimeset.c
 ALARM_TEST = TestEWatchAlarm.c
 
 # Generate runner file
