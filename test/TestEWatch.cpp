@@ -6,8 +6,12 @@
 #define OUT_SIZE 255
 
 static EWatch watch;
+static char out[OUT_SIZE];
 
-static std::string output(EWatch* w)
+#define TEST_ASSERT_EQUAL_STRING(expected, actual) \
+    REQUIRE(std::string(expected) == std::string(actual));
+
+static void output(EWatch* w, char* out)
 {
     int mode = EWatch_GetMode(w);
     int hours = EWatch_GetHours(w);
@@ -19,19 +23,15 @@ static std::string output(EWatch* w)
     const char* alarmStates[] = { "off", "on", "expired" };
     const char* alarmSS = alarmStates[alarmState];
 
-    static char buffer[OUT_SIZE];
-
     switch (mode) {
     case ALARM_MODE:
-        snprintf(buffer, OUT_SIZE, "Mode:%d %d:%d:%d %d %s", mode, hours, minutes, seconds, tenths, alarmSS);
+        snprintf(out, OUT_SIZE, "Mode:%d %d:%d:%d %d %s", mode, hours, minutes, seconds, tenths, alarmSS);
         break;
 
     default:
-        snprintf(buffer, OUT_SIZE, "Mode:%d %d:%d:%d %d", mode, hours, minutes, seconds, tenths);
+        snprintf(out, OUT_SIZE, "Mode:%d %d:%d:%d %d", mode, hours, minutes, seconds, tenths);
         break;
     }
-
-    return std::string(buffer);
 }
 
 static void waitFor(int hours, int minutes, int seconds, int tenths)
@@ -44,17 +44,26 @@ static void waitFor(int hours, int minutes, int seconds, int tenths)
     }
 }
 
-TEST_CASE("Intialization As Clock Mode", "[watch]")
+static void setUp(void)
 {
+    EWatch_Init(&watch);
+}
+
+TEST_CASE("IntializationAsClockMode(void)")
+{
+    setUp();
+
     EWatch watch;
     EWatch_Init(&watch);
 
-    REQUIRE(output(&watch) == "Mode:0 0:0:0 0");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:0 0:0:0 0", out);
 }
 
-TEST_CASE("Receiving Clock Tick Event")
+TEST_CASE("ReceivingClockTickEvent(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
 
     int ticks = convertToTicks(13, 23, 22, 0);
     int i;
@@ -63,13 +72,15 @@ TEST_CASE("Receiving Clock Tick Event")
         EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
     }
 
-    REQUIRE(output(&watch) == "Mode:0 13:23:22 0");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:0 13:23:22 0", out);
 }
 
 // --------------- Stopwatch tests --------------- //
-TEST_CASE("test_StopwatchModeIntialStateAllZero(void)")
+TEST_CASE("StopwatchModeIntialStateAllZero(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
 
     int i;
     for (i = 0; i < 800; i++) {
@@ -78,12 +89,14 @@ TEST_CASE("test_StopwatchModeIntialStateAllZero(void)")
 
     EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
 
-    REQUIRE(output(&watch) == "Mode:2 0:0:0 0");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:0 0", out);
 }
 
-TEST_CASE("test_StartStopwatchAndUpdateOutput(void)")
+TEST_CASE("StartStopwatchAndUpdateOutput(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
 
     int ticks = convertToTicks(0, 0, 2, 9);
 
@@ -95,12 +108,14 @@ TEST_CASE("test_StartStopwatchAndUpdateOutput(void)")
         EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
     }
 
-    REQUIRE(output(&watch) == "Mode:2 0:0:2 9");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:2 9", out);
 }
 
-TEST_CASE("test_CanResetStopwatchOnlyWhenStopped(void)")
+TEST_CASE("CanResetStopwatchOnlyWhenStopped(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
 
     EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
     EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
@@ -112,12 +127,14 @@ TEST_CASE("test_CanResetStopwatchOnlyWhenStopped(void)")
     EWatch_Dispatch(&watch, EW_BUTTON_P_SIG); // Stop
     EWatch_Dispatch(&watch, EW_BUTTON_M_SIG); // Reset
 
-    REQUIRE(output(&watch) == "Mode:2 0:0:0 0");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:0 0", out);
 }
 
-TEST_CASE("test_TimeIsRunningEvenIfWeAreInStopwatchMode(void)")
+TEST_CASE("TimeIsRunningEvenIfWeAreInStopwatchMode(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
 
     char stopwatchOutput[OUT_SIZE];
     char clockOutput[OUT_SIZE];
@@ -143,15 +160,20 @@ TEST_CASE("test_TimeIsRunningEvenIfWeAreInStopwatchMode(void)")
 
     // Stop
     EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
-    REQUIRE(output(&watch) == "Mode:2 0:0:20 0");
+
+    output(&watch, stopwatchOutput);
 
     EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
-    REQUIRE(output(&watch) == "Mode:0 12:15:50 1");
+
+    output(&watch, clockOutput);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:20 0", stopwatchOutput);
+    TEST_ASSERT_EQUAL_STRING("Mode:0 12:15:50 1", clockOutput);
 }
 
-TEST_CASE("test_StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)")
+TEST_CASE("StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
 
     EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
     EWatch_Dispatch(&watch, EW_BUTTON_P_SIG); // Start Stopwatch
@@ -164,13 +186,15 @@ TEST_CASE("test_StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)")
 
     EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG); // Switch back to stopwatch
 
-    REQUIRE(output(&watch) == "Mode:2 0:12:30 9");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:2 0:12:30 9", out);
 }
 
 // --------------- Timeset mode --------------- //
-TEST_CASE("test_TimesetModeInitializedWithCurrentTime(void)")
+TEST_CASE("TimesetModeInitializedWithCurrentTime(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
 
     waitFor(0, 20, 2, 0);
 
@@ -179,12 +203,15 @@ TEST_CASE("test_TimesetModeInitializedWithCurrentTime(void)")
     EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
     EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 
-    REQUIRE(output(&watch) == "Mode:3 2:20:0 0");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:3 2:20:0 0", out);
 }
 
-TEST_CASE("test_SetClockWhenSwitchViewBackToClockMode(void)")
+TEST_CASE("SetClockWhenSwitchViewBackToClockMode(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     int time = convertToTicks(2, 4, 11, 7);
     EWatchClock_Set(&watch.clock, time);
 
@@ -201,12 +228,15 @@ TEST_CASE("test_SetClockWhenSwitchViewBackToClockMode(void)")
 
     EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
 
-    REQUIRE(output(&watch) == "Mode:0 3:34:0 0");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:0 3:34:0 0", out);
 }
 
-TEST_CASE("test_SwitchToTimesetModeAndDecrementHoursAndMinutes(void)")
+TEST_CASE("SwitchToTimesetModeAndDecrementHoursAndMinutes(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatchClock_Set(&watch.clock, convertToTenths(12, 34, 0, 1));
     EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
 
@@ -223,14 +253,15 @@ TEST_CASE("test_SwitchToTimesetModeAndDecrementHoursAndMinutes(void)")
     // Switch back to clock mode
     EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
 
-    ;
+    output(&watch, out);
 
-    REQUIRE(output(&watch) == "Mode:0 11:4:0 0");
+    TEST_ASSERT_EQUAL_STRING("Mode:0 11:4:0 0", out);
 }
 
-TEST_CASE("test_ReturningToHoursAfterMinutesChangedIsAllowed(void)")
+TEST_CASE("ReturningToHoursAfterMinutesChangedIsAllowed(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatchClock_Set(&watch.clock, convertToTenths(11, 23, 58, 8));
 
     // Switch to timeset mode
@@ -254,14 +285,15 @@ TEST_CASE("test_ReturningToHoursAfterMinutesChangedIsAllowed(void)")
     // Switch back to clock mode
     EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
 
-    ;
+    output(&watch, out);
 
-    REQUIRE(output(&watch) == "Mode:0 12:20:0 0");
+    TEST_ASSERT_EQUAL_STRING("Mode:0 12:20:0 0", out);
 }
 
-TEST_CASE("test_ClockTicksDoesNotAffectTimeset(void)")
+TEST_CASE("ClockTicksDoesNotAffectTimeset(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatchClock_Set(&watch.clock, convertToTenths(12, 30, 34, 2));
 
     // Switch to timeset mode
@@ -284,14 +316,15 @@ TEST_CASE("test_ClockTicksDoesNotAffectTimeset(void)")
     // Switch back to clock
     EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
 
-    ;
+    output(&watch, out);
 
-    REQUIRE(output(&watch) == "Mode:0 14:0:0 0");
+    TEST_ASSERT_EQUAL_STRING("Mode:0 14:0:0 0", out);
 }
 
-TEST_CASE("test_SwitchToTimesetFromStopwatchMode(void)")
+TEST_CASE("SwitchToTimesetFromStopwatchMode(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
     EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
 
@@ -299,14 +332,15 @@ TEST_CASE("test_SwitchToTimesetFromStopwatchMode(void)")
 
     EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
 
-    ;
+    output(&watch, out);
 
-    REQUIRE(output(&watch) == "Mode:3 0:12:0 0");
+    TEST_ASSERT_EQUAL_STRING("Mode:3 0:12:0 0", out);
 }
 
-TEST_CASE("test_AlwaysCopyTheCurrentValueOfTimeWhenInTimesetMode(void)")
+TEST_CASE("AlwaysCopyTheCurrentValueOfTimeWhenInTimesetMode(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
 
     // Switch to stopwatch mode
@@ -318,26 +352,28 @@ TEST_CASE("test_AlwaysCopyTheCurrentValueOfTimeWhenInTimesetMode(void)")
     EWatch_Dispatch(&watch, EW_BUTTON_P_SIG); // Stop stopwatch
     EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
 
-    ;
+    output(&watch, out);
 
-    REQUIRE(output(&watch) == "Mode:3 12:22:0 0");
+    TEST_ASSERT_EQUAL_STRING("Mode:3 12:22:0 0", out);
 }
 
 // --------------- Alarm mode --------------- //
 
-TEST_CASE("test_SwitchToAlarmModeShowsCurrentAlarm(void)")
+TEST_CASE("SwitchToAlarmModeShowsCurrentAlarm(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
 
-    ;
+    output(&watch, out);
 
-    REQUIRE(output(&watch) == "Mode:1 12:0:0 0 off");
+    TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
 }
 
-TEST_CASE("test_FourAlarmSetSignalsSetTheAlarm(void)")
+TEST_CASE("FourAlarmSetSignalsSetTheAlarm(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Enters in alarm mode (does nothing)
 
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // -> Enters in Setting -> Set hours
@@ -345,14 +381,15 @@ TEST_CASE("test_FourAlarmSetSignalsSetTheAlarm(void)")
 
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set alarm
 
-    ;
+    output(&watch, out);
 
-    REQUIRE(output(&watch) == "Mode:1 12:0:0 0 on");
+    TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 on", out);
 }
 
-TEST_CASE("test_EnteringInSetAlarmModeAndSetHoursAndSeconds(void)")
+TEST_CASE("EnteringInSetAlarmModeAndSetHoursAndSeconds(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Enters in alarm mode (does nothing)
 
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // -> Enters in Setting -> Set hours
@@ -367,14 +404,15 @@ TEST_CASE("test_EnteringInSetAlarmModeAndSetHoursAndSeconds(void)")
     EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
     EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
 
-    ;
+    output(&watch, out);
 
-    REQUIRE(output(&watch) == "Mode:1 13:58:0 0 off");
+    TEST_ASSERT_EQUAL_STRING("Mode:1 13:58:0 0 off", out);
 }
 
-TEST_CASE("test_StartAlarmAtTime(void)")
+TEST_CASE("StartAlarmAtTime(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
 
     // Add 1 hour
@@ -389,31 +427,38 @@ TEST_CASE("test_StartAlarmAtTime(void)")
         EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
     }
 
-    REQUIRE(output(&watch) == "Mode:1 13:30:0 0 off");
+    output(&watch, out);
+    TEST_ASSERT_EQUAL_STRING("Mode:1 13:30:0 0 off", out);
 
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
 
-    REQUIRE(output(&watch) == "Mode:1 13:30:0 0 on");
+    output(&watch, out);
+    TEST_ASSERT_EQUAL_STRING("Mode:1 13:30:0 0 on", out);
 }
 
-TEST_CASE("test_SwitchBetweenStates(void)")
+TEST_CASE("SwitchBetweenStates(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
     EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
 
-    REQUIRE(output(&watch) == "Mode:1 12:0:0 0 off");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
 }
 
-TEST_CASE("test_AlarmExpireWhenIsTimeFromAnyState(void)")
+TEST_CASE("AlarmExpireWhenIsTimeFromAnyState(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
+
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // In alarm mode
 
     setAlarmTo(&watch.alarm, 12, 0);
 
-    REQUIRE(output(&watch) == "Mode:1 12:0:0 0 on");
+    output(&watch, out);
+    TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 on", out);
 
     EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
 
@@ -422,20 +467,20 @@ TEST_CASE("test_AlarmExpireWhenIsTimeFromAnyState(void)")
     EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
 
-    REQUIRE(output(&watch) == "Mode:1 12:0:0 0 expired");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 expired", out);
 
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Switch alarm off
 
-    REQUIRE(output(&watch) == "Mode:1 12:0:0 0 off");
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
 }
 
-#define TEST_ASSERT_EQUAL_MESSAGE(expected, actual, message) \
-    INFO(message);                                           \
-    REQUIRE(expected == actual);
-
-TEST_CASE("test_AlarmCanBeChangedAfterHasBeenTurnedOn(void)")
+TEST_CASE("AlarmCanBeChangedAfterHasBeenTurnedOn(void)")
 {
-    EWatch_Init(&watch);
+    setUp();
 
     enum AlarmState alarmState;
 
@@ -443,7 +488,6 @@ TEST_CASE("test_AlarmCanBeChangedAfterHasBeenTurnedOn(void)")
     setAlarmTo(&watch.alarm, 13, 30);
 
     alarmState = EWatch_GetAlarmState(&watch);
-
     TEST_ASSERT_EQUAL_MESSAGE(ALARM_ON, alarmState, "Expected ALARM_ON");
 
     // Set alarm to different time
@@ -468,8 +512,8 @@ TEST_CASE("test_AlarmCanBeChangedAfterHasBeenTurnedOn(void)")
     alarmState = EWatch_GetAlarmState(&watch);
     TEST_ASSERT_EQUAL_MESSAGE(ALARM_ON, alarmState, "Expected ALARM_ON");
 
-    REQUIRE(14 == EWatchAlarm_GetHours(&watch.alarm));
-    REQUIRE(0 == EWatchAlarm_GetMinutes(&watch.alarm));
+    TEST_ASSERT_EQUAL(14, EWatchAlarm_GetHours(&watch.alarm));
+    TEST_ASSERT_EQUAL(0, EWatchAlarm_GetMinutes(&watch.alarm));
 
     waitFor(14, 0, 0, 0);
 
