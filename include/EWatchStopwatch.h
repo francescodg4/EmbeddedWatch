@@ -24,11 +24,15 @@ typedef struct {
 } EWatchStopwatch;
 
 void EWatchStopwatch_Init(EWatchStopwatch* self);
+
 void EWatchStopwatch_Dispatch(EWatchStopwatch* self, enum EWatchStopwatchSignal sig);
 
 int EWatchStopwatch_GetHours(EWatchStopwatch* self);
+
 int EWatchStopwatch_GetMinutes(EWatchStopwatch* self);
+
 int EWatchStopwatch_GetSeconds(EWatchStopwatch* self);
+
 int EWatchStopwatch_GetTenths(EWatchStopwatch* self);
 
 #ifdef __cplusplus
