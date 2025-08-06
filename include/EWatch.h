@@ -24,18 +24,18 @@ enum EWatchSignal {
 
 // enum EWatchSignal {CLOCK_TICK};
 // enum EWatchControlSignal {SET_ALARM_MODE = 3, SET_CLOCK_MODE};
-enum EWatchMode { 
-	CLOCK_MODE,
+enum EWatchMode {
+    CLOCK_MODE,
     ALARM_MODE,
     STOPWATCH_MODE,
-    TIMESET_MODE 
+    TIMESET_MODE
 };
 
-enum EWatchState { 
-	CLOCK_STATE,
+enum EWatchState {
+    CLOCK_STATE,
     ALARM_STATE,
     STOPWATCH_STATE,
-    TIMESET_STATE 
+    TIMESET_STATE
 };
 
 typedef struct EWatch_ EWatch;
