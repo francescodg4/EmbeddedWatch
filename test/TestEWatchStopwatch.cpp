@@ -16,7 +16,7 @@ TEST_CASE("Initialized stopwatch all zero", "[stopwatch]")
 
     EWatchStopwatch_Init(&stopW);
 
-    checkTime(0, 0, 0, 0, &stopW.internal);
+    utils::checkTime(0, 0, 0, 0, &stopW.internal);
     TEST_ASSERT_EQUAL(ST_STOP_STATE, stopW.state);
 }
 
@@ -52,11 +52,11 @@ TEST_CASE("Update stopwatch value as ClockTick signals are received", "[stopwatc
     EWatchStopwatch_Dispatch(&stopwatch, ST_TOGGLE_SIG);
 
     // Updates counter when clock tick is received
-    for (int i = 0; i < convertToTicks(3, 30, 20, 2); i++) {
+    for (int i = 0; i < utils::convertToTicks(3, 30, 20, 2); i++) {
         EWatchStopwatch_Dispatch(&stopwatch, ST_CLOCK_TICK_SIG);
     }
 
-    checkTime(3, 30, 20, 2, &stopwatch.internal);
+    utils::checkTime(3, 30, 20, 2, &stopwatch.internal);
 }
 
 TEST_CASE("Once a running stopwatch is stopped, the next ClockTick events are ignored", "[stopwatch]")
@@ -67,7 +67,7 @@ TEST_CASE("Once a running stopwatch is stopped, the next ClockTick events are ig
     EWatchStopwatch_Dispatch(&stopwatch, ST_TOGGLE_SIG);
 
     // Updates counter when clock tick is received
-    for (int i = 0; i < convertToTicks(6, 20, 10, 5); i++) {
+    for (int i = 0; i < utils::convertToTicks(6, 20, 10, 5); i++) {
         EWatchStopwatch_Dispatch(&stopwatch, ST_CLOCK_TICK_SIG);
     }
 
@@ -79,7 +79,7 @@ TEST_CASE("Once a running stopwatch is stopped, the next ClockTick events are ig
         EWatchStopwatch_Dispatch(&stopwatch, ST_CLOCK_TICK_SIG);
     }
 
-    checkTime(6, 20, 10, 5, &stopwatch.internal);
+    utils::checkTime(6, 20, 10, 5, &stopwatch.internal);
 }
 
 TEST_CASE("If the stopwatch is restarted, it resumes from the point it was paused.", "[stopwatch]")
@@ -89,7 +89,7 @@ TEST_CASE("If the stopwatch is restarted, it resumes from the point it was pause
     // Start stopwatch
     EWatchStopwatch_Dispatch(&stopwatch, ST_TOGGLE_SIG);
 
-    for (int i = 0; i < convertToTicks(3, 30, 20, 2); i++) {
+    for (int i = 0; i < utils::convertToTicks(3, 30, 20, 2); i++) {
         EWatchStopwatch_Dispatch(&stopwatch, ST_CLOCK_TICK_SIG);
     }
 
@@ -99,14 +99,14 @@ TEST_CASE("If the stopwatch is restarted, it resumes from the point it was pause
     // Restart stopwatch
     EWatchStopwatch_Dispatch(&stopwatch, ST_TOGGLE_SIG);
 
-    checkTime(3, 30, 20, 2, &stopwatch.internal);
+    utils::checkTime(3, 30, 20, 2, &stopwatch.internal);
 
     // ClickTick signals are now used by stopwatch
     for (int i = 0; i < 2; i++) {
         EWatchStopwatch_Dispatch(&stopwatch, ST_CLOCK_TICK_SIG);
     }
 
-    checkTime(3, 30, 20, 4, &stopwatch.internal);
+    utils::checkTime(3, 30, 20, 4, &stopwatch.internal);
 }
 
 TEST_CASE("Stopwatch resets when ResetSignal is received", "[stopwatch]")
@@ -116,7 +116,7 @@ TEST_CASE("Stopwatch resets when ResetSignal is received", "[stopwatch]")
     // Start
     EWatchStopwatch_Dispatch(&stopwatch, ST_TOGGLE_SIG);
 
-    for (int i = 0; i < convertToTicks(1, 10, 11, 0); i++) {
+    for (int i = 0; i < utils::convertToTicks(1, 10, 11, 0); i++) {
         EWatchStopwatch_Dispatch(&stopwatch, ST_CLOCK_TICK_SIG);
     }
 
@@ -126,7 +126,7 @@ TEST_CASE("Stopwatch resets when ResetSignal is received", "[stopwatch]")
     // Reset
     EWatchStopwatch_Dispatch(&stopwatch, ST_RESET_SIG);
 
-    checkTime(0, 0, 0, 0, &stopwatch.internal);
+    utils::checkTime(0, 0, 0, 0, &stopwatch.internal);
 }
 
 TEST_CASE("Reset signals are ignored if the stopwatch is running", "[stopwatch]")
@@ -136,7 +136,7 @@ TEST_CASE("Reset signals are ignored if the stopwatch is running", "[stopwatch]"
     // Start
     EWatchStopwatch_Dispatch(&stopwatch, ST_TOGGLE_SIG);
 
-    for (int i = 0; i < convertToTicks(1, 10, 11, 0); i++) {
+    for (int i = 0; i < utils::convertToTicks(1, 10, 11, 0); i++) {
         EWatchStopwatch_Dispatch(&stopwatch, ST_CLOCK_TICK_SIG);
     }
 
@@ -148,7 +148,7 @@ TEST_CASE("Reset signals are ignored if the stopwatch is running", "[stopwatch]"
     // Stop
     EWatchStopwatch_Dispatch(&stopwatch, ST_TOGGLE_SIG);
 
-    checkTime(1, 10, 11, 0, &stopwatch.internal);
+    utils::checkTime(1, 10, 11, 0, &stopwatch.internal);
 }
 
 TEST_CASE("Double toggle returns to stop", "[stopwatch]")

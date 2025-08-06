@@ -1,6 +1,8 @@
 #include "utility.h"
 #include <catch2/catch_all.hpp>
 
+namespace utils {
+
 void checkTime(
     int expectedHours,
     int expectedMinutes,
@@ -14,22 +16,4 @@ void checkTime(
     TEST_ASSERT_EQUAL(expectedTenths, ClockCounter_GetTenths(c));
 }
 
-void setAlarmTo(EWatchAlarm* a, int hours, int minutes)
-{
-    EWatchTimeset_Set(&a->expirationTime, 0);
-
-    EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set hours
-
-    int i;
-    for (i = 0; i < hours; i++) {
-        EWatchAlarm_Dispatch(a, AL_INC_SIG);
-    }
-
-    EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set minutes
-
-    for (i = 0; i < minutes; i++) {
-        EWatchAlarm_Dispatch(a, AL_INC_SIG);
-    }
-
-    EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set alarm
-}
+} // namespace utils

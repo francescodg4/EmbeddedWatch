@@ -36,8 +36,6 @@ int ClockCounter_GetTenths(ClockCounter* self);
 
 unsigned int ClockCounter_GetCount(ClockCounter* self);
 
-int convertToTicks(int hours, int minutes, int seconds, int tenths);
-
 int convertToTenths(int hours, int minutes, int seconds, int tenths);
 
 #ifdef __cplusplus

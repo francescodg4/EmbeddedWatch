@@ -66,19 +66,12 @@ int ClockCounter_GetTenths(ClockCounter* this)
     return this->counter % 10;
 }
 
-int convertToTicks(int hours, int minutes, int seconds, int tenths)
-{
-    return convertToTenths(hours, minutes, seconds, tenths);
-}
+// int convertToTicks(int hours, int minutes, int seconds, int tenths)
+// {
+//     return convertToTenths(hours, minutes, seconds, tenths);
+// }
 
 int convertToTenths(int hours, int minutes, int seconds, int tenths)
 {
-    int ticks = 0;
-
-    ticks += hours * TENTHS_IN_HOUR;
-    ticks += minutes * TENTHS_IN_MINUTE;
-    ticks += seconds * TENTHS_IN_SECOND;
-    ticks += tenths;
-
-    return ticks;
+    return (hours * TENTHS_IN_HOUR) + (minutes * TENTHS_IN_MINUTE) + (seconds * TENTHS_IN_SECOND) + tenths;
 }
