@@ -6,143 +6,145 @@
 static EWatchAlarm alarm;
 static ClockCounter external;
 
-static void setAlarmTo(EWatchAlarm *a, int hours, int minutes)
-{	
-	EWatchTimeset_Set(&a->expirationTime, 0);
+static void setAlarmTo(EWatchAlarm* a, int hours, int minutes)
+{
+    EWatchTimeset_Set(&a->expirationTime, 0);
 
-	EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set hours
-	   
-	int i;
-	for (i = 0; i < hours; i++)
-		EWatchAlarm_Dispatch(a, AL_INC_SIG);	
-	
-	EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set minutes
+    EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set hours
 
-	for (i = 0; i < minutes; i++)
-		EWatchAlarm_Dispatch(a, AL_INC_SIG);
-	
-	EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set alarm
+    int i;
+    for (i = 0; i < hours; i++) {
+        EWatchAlarm_Dispatch(a, AL_INC_SIG);
+    }
+
+    EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set minutes
+
+    for (i = 0; i < minutes; i++) {
+        EWatchAlarm_Dispatch(a, AL_INC_SIG);
+    }
+
+    EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set alarm
 }
 
 static void waitFor(int hours, int minutes, int seconds, int tenths)
 {
-	int ticks = convertToTicks(12, 0, 0, 0);
-	int i;
-	
-	for (i = 0; i < ticks; i++) {
-		ClockCounter_Tick(&external);
-		EWatchAlarm_Dispatch(&alarm, AL_CLOCK_TICK_SIG);
-	}
+    int ticks = convertToTicks(12, 0, 0, 0);
+    int i;
+
+    for (i = 0; i < ticks; i++) {
+        ClockCounter_Tick(&external);
+        EWatchAlarm_Dispatch(&alarm, AL_CLOCK_TICK_SIG);
+    }
 }
 
 static void setUp(void)
-{	
-	ClockCounter_Init(&external);
-	EWatchAlarm_Init(&alarm, &external);	
+{
+    ClockCounter_Init(&external);
+    EWatchAlarm_Init(&alarm, &external);
 }
 
 TEST_CASE("test_InitializeWithDefaultAlarmAt12(void)")
 {
-	setUp();
+    setUp();
 
-	EWatchAlarm alarm;
+    EWatchAlarm alarm;
 
-	EWatchAlarm_Init(&alarm, &external);
-	
-	TEST_ASSERT_EQUAL(12, EWatchAlarm_GetHours(&alarm));
-	TEST_ASSERT_EQUAL(0, EWatchAlarm_GetMinutes(&alarm));
-	TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm));
+    EWatchAlarm_Init(&alarm, &external);
+
+    TEST_ASSERT_EQUAL(12, EWatchAlarm_GetHours(&alarm));
+    TEST_ASSERT_EQUAL(0, EWatchAlarm_GetMinutes(&alarm));
+    TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm));
 }
 
 TEST_CASE("test_SetAlarmToTime(void)")
 {
-	setUp();
+    setUp();
 
-	setAlarmTo(&alarm, 11, 0);
+    setAlarmTo(&alarm, 11, 0);
 
-	TEST_ASSERT_EQUAL(11, EWatchTimeset_GetHours(&alarm.expirationTime));
-	TEST_ASSERT_EQUAL(0, EWatchAlarm_GetMinutes(&alarm));
-	TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));
+    TEST_ASSERT_EQUAL(11, EWatchTimeset_GetHours(&alarm.expirationTime));
+    TEST_ASSERT_EQUAL(0, EWatchAlarm_GetMinutes(&alarm));
+    TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));
 }
 
 TEST_CASE("test_SwicthAlarmStateOnWhenSignalReceived(void)")
 {
-	setUp();
+    setUp();
 
-	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
-	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
-	
-	TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm));
-	
-	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
-	TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));       
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
+
+    TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm));
+
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
+    TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));
 }
 
 TEST_CASE("test_SetAlarmWaitForTicksAndExpire(void)")
 {
-	setUp();
+    setUp();
 
-	setAlarmTo(&alarm, 12, 0);
+    setAlarmTo(&alarm, 12, 0);
 
-	enum AlarmState prevState = EWatchAlarm_GetAlarmState(&alarm);
+    enum AlarmState prevState = EWatchAlarm_GetAlarmState(&alarm);
 
-	waitFor(12, 0, 0, 0);
+    waitFor(12, 0, 0, 0);
 
-	enum AlarmState currentState = EWatchAlarm_GetAlarmState(&alarm);
+    enum AlarmState currentState = EWatchAlarm_GetAlarmState(&alarm);
 
-	TEST_ASSERT_EQUAL_MESSAGE(ALARM_ON, prevState, "Expected ALARM_OFF");
-	TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, currentState, "Expected ALARM_EXPIRED");
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_ON, prevState, "Expected ALARM_OFF");
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, currentState, "Expected ALARM_EXPIRED");
 }
 
 TEST_CASE("test_AlarmWillExpireIfExternalTimeIsChanged(void)")
 {
-	setUp();
+    setUp();
 
-	ClockCounter_Set(&external, convertToTenths(11, 59, 59, 9));
-   
-	setAlarmTo(&alarm, 12, 0);
+    ClockCounter_Set(&external, convertToTenths(11, 59, 59, 9));
 
-	unsigned int twelve = EWatchTimeset_GetCount(&alarm.expirationTime);
-	
-	TEST_ASSERT_EQUAL(convertToTenths(12, 0, 0, 0), twelve);
+    setAlarmTo(&alarm, 12, 0);
 
-	ClockCounter_Tick(&external);
-	EWatchAlarm_Dispatch(&alarm, AL_CLOCK_TICK_SIG);
-	
-	enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
+    unsigned int twelve = EWatchTimeset_GetCount(&alarm.expirationTime);
 
-	TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
+    TEST_ASSERT_EQUAL(convertToTenths(12, 0, 0, 0), twelve);
+
+    ClockCounter_Tick(&external);
+    EWatchAlarm_Dispatch(&alarm, AL_CLOCK_TICK_SIG);
+
+    enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
+
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
 }
 
 TEST_CASE("test_AlarmIsNotYetExpired(void)")
 {
-	setUp();
+    setUp();
 
-	ClockCounter_Set(&external, convertToTenths(11, 59, 59, 8));
+    ClockCounter_Set(&external, convertToTenths(11, 59, 59, 8));
 
-	waitFor(0, 0, 0, 1);
+    waitFor(0, 0, 0, 1);
 
-	enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
-	
-	TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
+    enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
+
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
 }
 
 TEST_CASE("test_SwitchAlarmOffWhenExpired(void)")
 {
-	setUp();
+    setUp();
 
-	ClockCounter_Set(&external, convertToTenths(5, 29, 0, 0));
+    ClockCounter_Set(&external, convertToTenths(5, 29, 0, 0));
 
-	setAlarmTo(&alarm, 5, 30);
-	
-	waitFor(0, 1, 0, 0);
+    setAlarmTo(&alarm, 5, 30);
 
-	enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
+    waitFor(0, 1, 0, 0);
 
-	TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
+    enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
 
-	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Shutdown
-	alarmState = EWatchAlarm_GetAlarmState(&alarm);
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
 
-	TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Shutdown
+    alarmState = EWatchAlarm_GetAlarmState(&alarm);
+
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
 }

@@ -13,14 +13,14 @@ extern "C" {
 #endif
 
 int convertToTicks(int hours, int minutes, int seconds, int tenths);
-void setAlarmTo(EWatchAlarm *a, int hours, int minutes);
+void setAlarmTo(EWatchAlarm* a, int hours, int minutes);
 
 void checkTime(
-	int expectedHours,
-	int expectedMinutes,
-	int expectedSeconds,
-	int expectedTenths,
-	ClockCounter *c);
+    int expectedHours,
+    int expectedMinutes,
+    int expectedSeconds,
+    int expectedTenths,
+    ClockCounter* c);
 
 #define TEST_ASSERT_EQUAL(expected, actual) \
     REQUIRE(expected == actual);
