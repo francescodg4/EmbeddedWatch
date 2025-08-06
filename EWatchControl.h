@@ -1,5 +1,5 @@
 #ifndef EWATCHCONTROL_H
-#define EWATHCCONTROL_H
+#define EWATCHCONTROL_H
 
 #ifdef __cplusplus
 extern "C" {
