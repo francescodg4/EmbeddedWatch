@@ -13,15 +13,12 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(run-test
   TestEWatch.cpp
   TestEWatchAlarm.cpp
-  
   TestEWatchClock.cpp
   TestEWatchStopwatch.cpp
   TestEWatchTimeset.cpp
-
   utility.cpp
 )
 
 target_link_libraries(run-test PRIVATE Catch2::Catch2WithMain)
 
-target_include_directories(run-test PRIVATE ../)
 target_link_libraries(run-test PRIVATE embeddedwatch)
