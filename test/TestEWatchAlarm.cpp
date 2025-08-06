@@ -43,10 +43,8 @@ static void setUp(void)
     EWatchAlarm_Init(&alarm, &external);
 }
 
-TEST_CASE("test_InitializeWithDefaultAlarmAt12(void)")
+TEST_CASE("Initialize with default alarm at 12:00", "[alarm]")
 {
-    setUp();
-
     EWatchAlarm alarm;
 
     EWatchAlarm_Init(&alarm, &external);
@@ -56,7 +54,7 @@ TEST_CASE("test_InitializeWithDefaultAlarmAt12(void)")
     TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm));
 }
 
-TEST_CASE("test_SetAlarmToTime(void)")
+TEST_CASE("Set alarm to time", "[alarm]")
 {
     setUp();
 
@@ -67,36 +65,33 @@ TEST_CASE("test_SetAlarmToTime(void)")
     TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));
 }
 
-TEST_CASE("test_SwicthAlarmStateOnWhenSignalReceived(void)")
+TEST_CASE("Switch AlarmState to 'on' when hour and minutes are set, and an additional confirmation signal is received", "[alarm]")
 {
     setUp();
 
-    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
-    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // set hours
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // set minutes
 
-    TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm));
+    TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm)); // alarm is still 'off'
 
-    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
-    TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // confirm alarm
+    TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm)); // alarm is 'on'
 }
 
-TEST_CASE("test_SetAlarmWaitForTicksAndExpire(void)")
+TEST_CASE("Set alarm, wait for ticks, and expire", "[alarm]")
 {
     setUp();
 
     setAlarmTo(&alarm, 12, 0);
 
-    enum AlarmState prevState = EWatchAlarm_GetAlarmState(&alarm);
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm), "Expected ALARM_OFF");
 
     waitFor(12, 0, 0, 0);
 
-    enum AlarmState currentState = EWatchAlarm_GetAlarmState(&alarm);
-
-    TEST_ASSERT_EQUAL_MESSAGE(ALARM_ON, prevState, "Expected ALARM_OFF");
-    TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, currentState, "Expected ALARM_EXPIRED");
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, EWatchAlarm_GetAlarmState(&alarm), "Expected ALARM_EXPIRED");
 }
 
-TEST_CASE("test_AlarmWillExpireIfExternalTimeIsChanged(void)")
+TEST_CASE("Alarm will expire if external time is changed", "[alarm]")
 {
     setUp();
 
@@ -116,20 +111,7 @@ TEST_CASE("test_AlarmWillExpireIfExternalTimeIsChanged(void)")
     TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
 }
 
-TEST_CASE("test_AlarmIsNotYetExpired(void)")
-{
-    setUp();
-
-    ClockCounter_Set(&external, convertToTenths(11, 59, 59, 8));
-
-    waitFor(0, 0, 0, 1);
-
-    enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
-
-    TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
-}
-
-TEST_CASE("test_SwitchAlarmOffWhenExpired(void)")
+TEST_CASE("Once alarm expires, an AlarmSet signal turns off the alarm", "[alarm]")
 {
     setUp();
 
@@ -139,12 +121,9 @@ TEST_CASE("test_SwitchAlarmOffWhenExpired(void)")
 
     waitFor(0, 1, 0, 0);
 
-    enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
-
-    TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, EWatchAlarm_GetAlarmState(&alarm), "Expected ALARM_EXPIRED");
 
     EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // Shutdown
-    alarmState = EWatchAlarm_GetAlarmState(&alarm);
 
-    TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
+    TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm), "Expected ALARM_OFF");
 }

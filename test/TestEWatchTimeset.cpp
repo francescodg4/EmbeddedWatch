@@ -3,175 +3,168 @@
 #include <EWatchTimeset.h>
 #include "utility.h"
 
-static EWatchTimeset w;
+static EWatchTimeset timeset;
 
-void setUp(void)
+static void setUp(void)
 {
-    EWatchTimeset_Init(&w);
+    EWatchTimeset_Init(&timeset);
 }
 
-TEST_CASE("InitilizedAtTime0(void)")
+TEST_CASE("Initilized at time all zero")
 {
     EWatchTimeset w;
     EWatchTimeset_Init(&w);
 
     checkTime(0, 0, 0, 0, &w.internal);
+
     TEST_ASSERT_EQUAL_MESSAGE(TS_SET_HOURS_STATE, w.state, "Expected TS_SET_HOURS_STATE");
 }
 
-TEST_CASE("AddHour(void)")
+TEST_CASE("Add hour")
 {
     setUp();
 
-    EWatchTimeset_Dispatch(&w, TS_INC_SIG);
+    EWatchTimeset_Dispatch(&timeset, TS_INC_SIG);
 
-    checkTime(1, 0, 0, 0, &w.internal);
+    checkTime(1, 0, 0, 0, &timeset.internal);
 }
 
-TEST_CASE("AddMinute(void)")
+TEST_CASE("Add minutes")
 {
     setUp();
 
-    EWatchTimeset_Dispatch(&w, TS_SET_MINUTES_MODE_SIG);
-    EWatchTimeset_Dispatch(&w, TS_INC_SIG);
+    EWatchTimeset_Dispatch(&timeset, TS_SET_MINUTES_MODE_SIG);
+    EWatchTimeset_Dispatch(&timeset, TS_INC_SIG);
 
-    checkTime(0, 1, 0, 0, &w.internal);
+    checkTime(0, 1, 0, 0, &timeset.internal);
 }
 
-TEST_CASE("AddMoreHours(void)")
+TEST_CASE("Add more hours")
 {
     setUp();
 
-    int i;
-
-    for (i = 0; i < 5; i++) {
-        EWatchTimeset_Dispatch(&w, TS_INC_SIG);
+    for (int i = 0; i < 5; i++) {
+        EWatchTimeset_Dispatch(&timeset, TS_INC_SIG);
     }
 
-    checkTime(5, 0, 0, 0, &w.internal);
+    checkTime(5, 0, 0, 0, &timeset.internal);
 }
 
-TEST_CASE("AddMoreMinutes(void)")
+TEST_CASE("Add more minutes")
 {
     setUp();
 
-    EWatchTimeset_Dispatch(&w, TS_SET_MINUTES_MODE_SIG);
+    EWatchTimeset_Dispatch(&timeset, TS_SET_MINUTES_MODE_SIG);
 
-    int i;
-    for (i = 0; i < 50; i++) {
-        EWatchTimeset_Dispatch(&w, TS_INC_SIG);
+    for (int i = 0; i < 50; i++) {
+        EWatchTimeset_Dispatch(&timeset, TS_INC_SIG);
     }
 
-    checkTime(0, 50, 0, 0, &w.internal);
+    checkTime(0, 50, 0, 0, &timeset.internal);
 }
 
-TEST_CASE("AddMinutesThanAddHours(void)")
+TEST_CASE("Add minutes, then add hours")
 {
     setUp();
 
-    EWatchTimeset_Dispatch(&w, TS_SET_MINUTES_MODE_SIG);
-    int i;
-    for (i = 0; i < 30; i++) {
-        EWatchTimeset_Dispatch(&w, TS_INC_SIG);
-    }
-    EWatchTimeset_Dispatch(&w, TS_SET_HOURS_MODE_SIG);
+    EWatchTimeset_Dispatch(&timeset, TS_SET_MINUTES_MODE_SIG);
 
-    for (i = 0; i < 2; i++) {
-        EWatchTimeset_Dispatch(&w, TS_INC_SIG);
+    for (int i = 0; i < 30; i++) {
+        EWatchTimeset_Dispatch(&timeset, TS_INC_SIG);
     }
 
-    checkTime(2, 30, 0, 0, &w.internal);
-}
+    EWatchTimeset_Dispatch(&timeset, TS_SET_HOURS_MODE_SIG);
 
-TEST_CASE("DecrementHours(void)")
-{
-    setUp();
-
-    int time = convertToTicks(2, 30, 0, 0);
-    ClockCounter_Set(&w.internal, time);
-
-    EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
-
-    checkTime(1, 30, 0, 0, &w.internal);
-}
-
-TEST_CASE("DecrementAtLimit(void)")
-{
-    setUp();
-
-    EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
-    checkTime(23, 0, 0, 0, &w.internal);
-
-    int anHour = convertToTicks(1, 0, 0, 0);
-    ClockCounter_Set(&w.internal, anHour);
-
-    EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
-    EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
-
-    checkTime(23, 0, 0, 0, &w.internal);
-}
-
-TEST_CASE("DecrementMinutes(void)")
-{
-    setUp();
-
-    int secureTime = convertToTicks(1, 23, 0, 0);
-    ClockCounter_Set(&w.internal, secureTime);
-
-    EWatchTimeset_Dispatch(&w, TS_SET_MINUTES_MODE_SIG);
-    EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
-
-    checkTime(1, 22, 0, 0, &w.internal);
-
-    int i;
-    for (i = 0; i < 23; i++) {
-        EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
+    for (int i = 0; i < 2; i++) {
+        EWatchTimeset_Dispatch(&timeset, TS_INC_SIG);
     }
 
-    checkTime(0, 59, 0, 0, &w.internal);
+    checkTime(2, 30, 0, 0, &timeset.internal);
 }
 
-TEST_CASE("DecrementMinutesAtLimit(void)")
+TEST_CASE("Decrement hours")
 {
     setUp();
 
-    EWatchTimeset_Dispatch(&w, TS_SET_MINUTES_MODE_SIG);
-    EWatchTimeset_Dispatch(&w, TS_DEC_SIG);
+    ClockCounter_Set(&timeset.internal, convertToTicks(2, 30, 0, 0));
 
-    checkTime(23, 59, 0, 0, &w.internal);
+    EWatchTimeset_Dispatch(&timeset, TS_DEC_SIG);
+
+    checkTime(1, 30, 0, 0, &timeset.internal);
 }
 
-TEST_CASE("SetTimeset(void)")
+TEST_CASE("Decrement at limit")
+{
+    setUp();
+
+    EWatchTimeset_Dispatch(&timeset, TS_DEC_SIG);
+    checkTime(23, 0, 0, 0, &timeset.internal);
+
+    ClockCounter_Set(&timeset.internal, convertToTicks(1, 0, 0, 0));
+
+    EWatchTimeset_Dispatch(&timeset, TS_DEC_SIG);
+    EWatchTimeset_Dispatch(&timeset, TS_DEC_SIG);
+
+    checkTime(23, 0, 0, 0, &timeset.internal);
+}
+
+TEST_CASE("Decrement minutes")
+{
+    setUp();
+
+    ClockCounter_Set(&timeset.internal, convertToTicks(1, 23, 0, 0));
+
+    EWatchTimeset_Dispatch(&timeset, TS_SET_MINUTES_MODE_SIG);
+    EWatchTimeset_Dispatch(&timeset, TS_DEC_SIG);
+
+    checkTime(1, 22, 0, 0, &timeset.internal);
+
+    for (int i = 0; i < 23; i++) {
+        EWatchTimeset_Dispatch(&timeset, TS_DEC_SIG);
+    }
+
+    checkTime(0, 59, 0, 0, &timeset.internal);
+}
+
+TEST_CASE("Decrement minutes at limit")
+{
+    setUp();
+
+    EWatchTimeset_Dispatch(&timeset, TS_SET_MINUTES_MODE_SIG);
+    EWatchTimeset_Dispatch(&timeset, TS_DEC_SIG);
+
+    checkTime(23, 59, 0, 0, &timeset.internal);
+}
+
+TEST_CASE("Set timeset")
 {
     setUp();
 
     int ticks = convertToTicks(2, 30, 0, 0);
-    EWatchTimeset_Set(&w, ticks);
+    EWatchTimeset_Set(&timeset, ticks);
 
-    TEST_ASSERT_EQUAL(ticks, EWatchTimeset_GetCount(&w));
+    TEST_ASSERT_EQUAL(ticks, EWatchTimeset_GetCount(&timeset));
 }
 
-TEST_CASE("SetTimeAndShowHoursMinutesAndSeconds(void)")
+TEST_CASE("Set time and show hours, minutes, and seconds")
 {
     setUp();
 
-    int ticks = convertToTicks(2, 32, 23, 1);
-    EWatchTimeset_Set(&w, ticks);
+    EWatchTimeset_Set(&timeset, convertToTicks(2, 32, 23, 1));
 
-    checkTime(2, 32, 23, 1, &w.internal);
+    checkTime(2, 32, 23, 1, &timeset.internal);
 }
 
-TEST_CASE("SetTimeAndAddHour(void)")
+TEST_CASE("Set time and add hour")
 {
     setUp();
 
-    int ticks = convertToTicks(2, 33, 22, 1);
-    EWatchTimeset_Set(&w, ticks);
+    EWatchTimeset_Set(&timeset, convertToTicks(2, 33, 22, 1));
 
-    EWatchTimeset_Dispatch(&w, TS_INC_SIG);
+    EWatchTimeset_Dispatch(&timeset, TS_INC_SIG);
 
-    TEST_ASSERT_EQUAL(3, EWatchTimeset_GetHours(&w));
-    TEST_ASSERT_EQUAL(33, EWatchTimeset_GetMinutes(&w));
-    TEST_ASSERT_EQUAL(22, EWatchTimeset_GetSeconds(&w));
-    TEST_ASSERT_EQUAL(1, EWatchTimeset_GetTenths(&w));
+    TEST_ASSERT_EQUAL(3, EWatchTimeset_GetHours(&timeset));
+    TEST_ASSERT_EQUAL(33, EWatchTimeset_GetMinutes(&timeset));
+    TEST_ASSERT_EQUAL(22, EWatchTimeset_GetSeconds(&timeset));
+    TEST_ASSERT_EQUAL(1, EWatchTimeset_GetTenths(&timeset));
 }
