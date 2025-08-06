@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-// #include "EWatchControl.h"
+#include "EWatchEnums.h"
+#include "EWatchControl.h"
 #include "EWatchClock.h"
 #include "EWatchStopwatch.h"
 #include "EWatchAlarm.h"
@@ -24,13 +25,6 @@ enum EWatchSignal {
 
 // enum EWatchSignal {CLOCK_TICK};
 // enum EWatchControlSignal {SET_ALARM_MODE = 3, SET_CLOCK_MODE};
-enum EWatchMode {
-    CLOCK_MODE,
-    ALARM_MODE,
-    STOPWATCH_MODE,
-    TIMESET_MODE
-};
-
 enum EWatchState {
     CLOCK_STATE,
     ALARM_STATE,
@@ -48,12 +42,12 @@ struct EWatch_ {
     enum AlarmState alarmState;
     enum EWatchMode mode;
     // int counter;
-    // EWatchControl control;
+
+    EWatchControl control;
     EWatchClock clock;
     EWatchStopwatch stopwatch;
     EWatchAlarm alarm;
     void (*state)(EWatch*, enum EWatchSignal);
-    // State state;
 };
 
 void EWatch_Init(EWatch* self);
