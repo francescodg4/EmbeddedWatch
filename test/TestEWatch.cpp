@@ -49,10 +49,8 @@ static void setUp(void)
     EWatch_Init(&watch);
 }
 
-TEST_CASE("IntializationAsClockMode(void)")
+TEST_CASE("At intialization EWatch is in ClockMode")
 {
-    setUp();
-
     EWatch watch;
     EWatch_Init(&watch);
 
@@ -61,7 +59,7 @@ TEST_CASE("IntializationAsClockMode(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:0 0:0:0 0", out);
 }
 
-TEST_CASE("ReceivingClockTickEvent(void)")
+TEST_CASE("Receiving ClockTick events")
 {
     setUp();
 
@@ -78,7 +76,7 @@ TEST_CASE("ReceivingClockTickEvent(void)")
 }
 
 // --------------- Stopwatch tests --------------- //
-TEST_CASE("StopwatchModeIntialStateAllZero(void)")
+TEST_CASE("StopwatchMode intial state all zero", "[stopwatch]")
 {
     setUp();
 
@@ -94,7 +92,7 @@ TEST_CASE("StopwatchModeIntialStateAllZero(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:0 0", out);
 }
 
-TEST_CASE("StartStopwatchAndUpdateOutput(void)")
+TEST_CASE("Start stopwatch and update output", "[stopwatch]")
 {
     setUp();
 
@@ -113,7 +111,7 @@ TEST_CASE("StartStopwatchAndUpdateOutput(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:2 9", out);
 }
 
-TEST_CASE("CanResetStopwatchOnlyWhenStopped(void)")
+TEST_CASE("Can reset stopwatch only when stopped", "[stopwatch]")
 {
     setUp();
 
@@ -132,7 +130,7 @@ TEST_CASE("CanResetStopwatchOnlyWhenStopped(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:2 0:0:0 0", out);
 }
 
-TEST_CASE("TimeIsRunningEvenIfWeAreInStopwatchMode(void)")
+TEST_CASE("Time is running even if we are in StopwatchMode", "[stopwatch]")
 {
     setUp();
 
@@ -171,7 +169,7 @@ TEST_CASE("TimeIsRunningEvenIfWeAreInStopwatchMode(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:0 12:15:50 1", clockOutput);
 }
 
-TEST_CASE("StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)")
+TEST_CASE("Stopwatch will continue to run even if the current view changes", "[stopwatch]")
 {
     setUp();
 
@@ -192,7 +190,7 @@ TEST_CASE("StartingStopwatchAndSwitchingViewDoesNotStopStopwatch(void)")
 }
 
 // --------------- Timeset mode --------------- //
-TEST_CASE("TimesetModeInitializedWithCurrentTime(void)")
+TEST_CASE("TimesetModeInitializedWithCurrentTime", "[timeset]")
 {
     setUp();
 
@@ -208,7 +206,7 @@ TEST_CASE("TimesetModeInitializedWithCurrentTime(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:3 2:20:0 0", out);
 }
 
-TEST_CASE("SetClockWhenSwitchViewBackToClockMode(void)")
+TEST_CASE("SetClockWhenSwitchViewBackToClockMode", "[timeset]")
 {
     setUp();
 
@@ -233,7 +231,7 @@ TEST_CASE("SetClockWhenSwitchViewBackToClockMode(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:0 3:34:0 0", out);
 }
 
-TEST_CASE("SwitchToTimesetModeAndDecrementHoursAndMinutes(void)")
+TEST_CASE("Switch to TimeSetMode and decrement hours and minutes", "[timeset]")
 {
     setUp();
 
@@ -258,7 +256,7 @@ TEST_CASE("SwitchToTimesetModeAndDecrementHoursAndMinutes(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:0 11:4:0 0", out);
 }
 
-TEST_CASE("ReturningToHoursAfterMinutesChangedIsAllowed(void)")
+TEST_CASE("Returning to hours after minutes changed is allowed", "[timeset]")
 {
     setUp();
 
@@ -290,7 +288,7 @@ TEST_CASE("ReturningToHoursAfterMinutesChangedIsAllowed(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:0 12:20:0 0", out);
 }
 
-TEST_CASE("ClockTicksDoesNotAffectTimeset(void)")
+TEST_CASE("Clock ticks do not change TimeSet", "[timeset]")
 {
     setUp();
 
@@ -321,7 +319,7 @@ TEST_CASE("ClockTicksDoesNotAffectTimeset(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:0 14:0:0 0", out);
 }
 
-TEST_CASE("SwitchToTimesetFromStopwatchMode(void)")
+TEST_CASE("Switch To TimeSet From StopwatchMode", "[timeset]")
 {
     setUp();
 
@@ -337,7 +335,7 @@ TEST_CASE("SwitchToTimesetFromStopwatchMode(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:3 0:12:0 0", out);
 }
 
-TEST_CASE("AlwaysCopyTheCurrentValueOfTimeWhenInTimesetMode(void)")
+TEST_CASE("Always copy the current value of time when in TimeSetMode", "[timeset]")
 {
     setUp();
 
@@ -359,7 +357,7 @@ TEST_CASE("AlwaysCopyTheCurrentValueOfTimeWhenInTimesetMode(void)")
 
 // --------------- Alarm mode --------------- //
 
-TEST_CASE("SwitchToAlarmModeShowsCurrentAlarm(void)")
+TEST_CASE("Switch to AlarmMode shows current alarm", "[alarm]")
 {
     setUp();
 
@@ -370,7 +368,7 @@ TEST_CASE("SwitchToAlarmModeShowsCurrentAlarm(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
 }
 
-TEST_CASE("FourAlarmSetSignalsSetTheAlarm(void)")
+TEST_CASE("Confirm AlarmSet signal is requested after setting hours and minutes", "[alarm]")
 {
     setUp();
 
@@ -386,7 +384,7 @@ TEST_CASE("FourAlarmSetSignalsSetTheAlarm(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 on", out);
 }
 
-TEST_CASE("EnteringInSetAlarmModeAndSetHoursAndSeconds(void)")
+TEST_CASE("In AlarmMode set hours and minutes", "[alarm]")
 {
     setUp();
 
@@ -409,7 +407,7 @@ TEST_CASE("EnteringInSetAlarmModeAndSetHoursAndSeconds(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:1 13:58:0 0 off", out);
 }
 
-TEST_CASE("StartAlarmAtTime(void)")
+TEST_CASE("Start alarm at time", "[alarm]")
 {
     setUp();
 
@@ -436,7 +434,7 @@ TEST_CASE("StartAlarmAtTime(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:1 13:30:0 0 on", out);
 }
 
-TEST_CASE("SwitchBetweenStates(void)")
+TEST_CASE("Switch between states", "[alarm]")
 {
     setUp();
 
@@ -449,7 +447,7 @@ TEST_CASE("SwitchBetweenStates(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
 }
 
-TEST_CASE("AlarmExpireWhenIsTimeFromAnyState(void)")
+TEST_CASE("Alarm starts when its time expires from any states", "[alarm]")
 {
     setUp();
 
@@ -478,7 +476,7 @@ TEST_CASE("AlarmExpireWhenIsTimeFromAnyState(void)")
     TEST_ASSERT_EQUAL_STRING("Mode:1 12:0:0 0 off", out);
 }
 
-TEST_CASE("AlarmCanBeChangedAfterHasBeenTurnedOn(void)")
+TEST_CASE("Alarm can be changed even after it has been activated", "[alarm]")
 {
     setUp();
 
