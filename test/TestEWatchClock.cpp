@@ -1,15 +1,11 @@
-#include "unity.h"
-#include "../EWatchClock.h"
+#include <catch2/catch_all.hpp>
+
+#include <EWatchClock.h>
 #include "utility.h"
 
 static EWatchClock watch;
 
-void setUp(void)
-{
-	EWatchClock_Init(&watch);
-}
-
-void test_StartWatchWithInitialState(void)
+TEST_CASE("test_StartWatchWithInitialState(void)")
 {
 	EWatchClock watch;
 	
@@ -21,14 +17,18 @@ void test_StartWatchWithInitialState(void)
 	TEST_ASSERT_EQUAL(0, EWatchClock_GetTenths(&watch));
 }
 
-void test_SendClockTickSignalToWatch(void)
+TEST_CASE("test_SendClockTickSignalToWatch(void)")
 {
+	EWatchClock_Init(&watch);
+
 	EWatchClock_Dispatch(&watch, CLOCK_TICK);
 	TEST_ASSERT_EQUAL(1, EWatchClock_GetTenths(&watch));
 }
 
-void test_TickOneSecondWhenTenthsArePassed(void)
+TEST_CASE("test_TickOneSecondWhenTenthsArePassed(void)")
 {
+	EWatchClock_Init(&watch);
+
 	int i;
 	for (i = 0; i < 10; i++)
 		EWatchClock_Dispatch(&watch, CLOCK_TICK);
@@ -37,8 +37,10 @@ void test_TickOneSecondWhenTenthsArePassed(void)
 	TEST_ASSERT_EQUAL(1, EWatchClock_GetSeconds(&watch));
 }
 
-void test_TickOneMinuteWhenSecondsArePassed(void)
+TEST_CASE("test_TickOneMinuteWhenSecondsArePassed(void)")
 {
+	EWatchClock_Init(&watch);
+
 	int i;
 	for (i = 0; i < 60 * 10; i++)
 		EWatchClock_Dispatch(&watch, CLOCK_TICK);
@@ -47,8 +49,10 @@ void test_TickOneMinuteWhenSecondsArePassed(void)
 	TEST_ASSERT_EQUAL(1, EWatchClock_GetMinutes(&watch));
 }
 
-void test_TickOneHourWhenMinutesArePassed(void)
+TEST_CASE("test_TickOneHourWhenMinutesArePassed(void)")
 {
+	EWatchClock_Init(&watch);
+
 	int i;
 	for (i = 0; i < 60 * 60 * 10; i++)
 		EWatchClock_Dispatch(&watch, CLOCK_TICK);
@@ -57,8 +61,10 @@ void test_TickOneHourWhenMinutesArePassed(void)
 	TEST_ASSERT_EQUAL(1, EWatchClock_GetHours(&watch));
 }
 
-void test_ResetWhenADayIsPassed(void)
+TEST_CASE("test_ResetWhenADayIsPassed(void)")
 {
+	EWatchClock_Init(&watch);
+
 	int day = 24 * 60 * 60 * 10;
 
 	int i;
@@ -71,8 +77,10 @@ void test_ResetWhenADayIsPassed(void)
 	TEST_ASSERT_EQUAL(0, EWatchClock_GetHours(&watch));
 }
 
-void test_CountShouldNotBeMoreThanDayLength(void)
+TEST_CASE("test_CountShouldNotBeMoreThanDayLength(void)")
 {
+	EWatchClock_Init(&watch);
+
 	int i;
 	for (i = 0; i < TENTHS_IN_DAY; i++)
 		EWatchClock_Dispatch(&watch, CLOCK_TICK);
@@ -80,8 +88,10 @@ void test_CountShouldNotBeMoreThanDayLength(void)
 	TEST_ASSERT_EQUAL(0, ClockCounter_GetCount(&watch.counter));
 }
 
-void test_CountTo3Hours20MinutesAnd30Seconds(void)
+TEST_CASE("test_CountTo3Hours20MinutesAnd30Seconds(void)")
 {
+	EWatchClock_Init(&watch);
+
 	int ticks = convertToTicks(3, 20, 30, 0);
 
 	int i;
@@ -94,8 +104,10 @@ void test_CountTo3Hours20MinutesAnd30Seconds(void)
 	TEST_ASSERT_EQUAL(0, EWatchClock_GetTenths(&watch));
 }
 
-void test_CountToDayLimit(void)
+TEST_CASE("test_CountToDayLimit(void)")
 {
+	EWatchClock_Init(&watch);
+
 	int ticks = convertToTicks(23, 59, 59, 9);
 	
 	int i;

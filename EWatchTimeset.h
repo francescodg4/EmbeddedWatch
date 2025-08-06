@@ -3,6 +3,10 @@
 
 #include "ClockCounter.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum EWatchTimesetSignal {
 	TS_INC_SIG,
 	TS_DEC_SIG,
@@ -18,15 +22,19 @@ typedef struct {
 	enum EWatchTimesetState state;
 } EWatchTimeset;
 
-void EWatchTimeset_Init(EWatchTimeset *this);
-void EWatchTimeset_Dispatch(EWatchTimeset *this, enum EWatchTimesetSignal sig);
+void EWatchTimeset_Init(EWatchTimeset *self);
+void EWatchTimeset_Dispatch(EWatchTimeset *self, enum EWatchTimesetSignal sig);
 
-void EWatchTimeset_Set(EWatchTimeset *this, unsigned int tenths); 
+void EWatchTimeset_Set(EWatchTimeset *self, unsigned int tenths); 
 
-unsigned int EWatchTimeset_GetCount(EWatchTimeset *this);
-int EWatchTimeset_GetHours(EWatchTimeset *this);
-int EWatchTimeset_GetMinutes(EWatchTimeset *this);
-int EWatchTimeset_GetSeconds(EWatchTimeset *this);
-int EWatchTimeset_GetTenths(EWatchTimeset *this);
+unsigned int EWatchTimeset_GetCount(EWatchTimeset *self);
+int EWatchTimeset_GetHours(EWatchTimeset *self);
+int EWatchTimeset_GetMinutes(EWatchTimeset *self);
+int EWatchTimeset_GetSeconds(EWatchTimeset *self);
+int EWatchTimeset_GetTenths(EWatchTimeset *self);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* EWATCHTIMESET_H */

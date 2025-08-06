@@ -1,5 +1,7 @@
-#include "unity.h"
-#include "../EWatchAlarm.h"
+#include <catch2/catch_all.hpp>
+
+#include <EWatchAlarm.h>
+#include "utility.h"
 
 static EWatchAlarm alarm;
 static ClockCounter external;
@@ -33,14 +35,16 @@ static void waitFor(int hours, int minutes, int seconds, int tenths)
 	}
 }
 
-void setUp(void)
+static void setUp(void)
 {	
 	ClockCounter_Init(&external);
 	EWatchAlarm_Init(&alarm, &external);	
 }
 
-void test_InitializeWithDefaultAlarmAt12(void)
+TEST_CASE("test_InitializeWithDefaultAlarmAt12(void)")
 {
+	setUp();
+
 	EWatchAlarm alarm;
 
 	EWatchAlarm_Init(&alarm, &external);
@@ -50,8 +54,10 @@ void test_InitializeWithDefaultAlarmAt12(void)
 	TEST_ASSERT_EQUAL(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm));
 }
 
-void test_SetAlarmToTime(void)
+TEST_CASE("test_SetAlarmToTime(void)")
 {
+	setUp();
+
 	setAlarmTo(&alarm, 11, 0);
 
 	TEST_ASSERT_EQUAL(11, EWatchTimeset_GetHours(&alarm.expirationTime));
@@ -59,8 +65,10 @@ void test_SetAlarmToTime(void)
 	TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));
 }
 
-void test_SwicthAlarmStateOnWhenSignalReceived(void)
+TEST_CASE("test_SwicthAlarmStateOnWhenSignalReceived(void)")
 {
+	setUp();
+
 	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
 	EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG);
 	
@@ -70,8 +78,10 @@ void test_SwicthAlarmStateOnWhenSignalReceived(void)
 	TEST_ASSERT_EQUAL(ALARM_ON, EWatchAlarm_GetAlarmState(&alarm));       
 }
 
-void test_SetAlarmWaitForTicksAndExpire(void)
+TEST_CASE("test_SetAlarmWaitForTicksAndExpire(void)")
 {
+	setUp();
+
 	setAlarmTo(&alarm, 12, 0);
 
 	enum AlarmState prevState = EWatchAlarm_GetAlarmState(&alarm);
@@ -84,8 +94,10 @@ void test_SetAlarmWaitForTicksAndExpire(void)
 	TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, currentState, "Expected ALARM_EXPIRED");
 }
 
-void test_AlarmWillExpireIfExternalTimeIsChanged(void)
+TEST_CASE("test_AlarmWillExpireIfExternalTimeIsChanged(void)")
 {
+	setUp();
+
 	ClockCounter_Set(&external, convertToTenths(11, 59, 59, 9));
    
 	setAlarmTo(&alarm, 12, 0);
@@ -102,10 +114,12 @@ void test_AlarmWillExpireIfExternalTimeIsChanged(void)
 	TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
 }
 
-void test_AlarmIsNotYetExpired(void)
+TEST_CASE("test_AlarmIsNotYetExpired(void)")
 {
+	setUp();
+
 	ClockCounter_Set(&external, convertToTenths(11, 59, 59, 8));
-	
+
 	waitFor(0, 0, 0, 1);
 
 	enum AlarmState alarmState = EWatchAlarm_GetAlarmState(&alarm);
@@ -113,8 +127,10 @@ void test_AlarmIsNotYetExpired(void)
 	TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, alarmState, "Expected ALARM_OFF");
 }
 
-void test_SwitchAlarmOffWhenExpired(void)
+TEST_CASE("test_SwitchAlarmOffWhenExpired(void)")
 {
+	setUp();
+
 	ClockCounter_Set(&external, convertToTenths(5, 29, 0, 0));
 
 	setAlarmTo(&alarm, 5, 30);

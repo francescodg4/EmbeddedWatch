@@ -1,5 +1,0 @@
-*.o
-test/*
-!test/*.[c,h]
-!test/*.sh
-test/*_Runner.c

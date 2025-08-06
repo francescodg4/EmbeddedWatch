@@ -1,15 +1,16 @@
-#include "unity.h"
-#include "../EWatchStopwatch.h"
+#include <catch2/catch_all.hpp>
+
+#include <EWatchStopwatch.h>
 #include "utility.h"
 
 static EWatchStopwatch watch;
 
-void setUp(void)
+static void setUp(void)
 {
 	EWatchStopwatch_Init(&watch);
 }
 
-void test_InitializedCounterAtZero(void)
+TEST_CASE("test_InitializedCounterAtZero(void)")
 {
 	EWatchStopwatch stopW;
 	
@@ -19,8 +20,10 @@ void test_InitializedCounterAtZero(void)
 	TEST_ASSERT_EQUAL(ST_STOP_STATE, stopW.state);
 }
 
-void test_WhenInStopStateDiscardClockEvents(void)
+TEST_CASE("test_WhenInStopStateDiscardClockEvents(void)")
 {
+	setUp();
+
 	int i;
 	
 	for (i = 0; i < 100; i++)
@@ -29,8 +32,10 @@ void test_WhenInStopStateDiscardClockEvents(void)
 	TEST_ASSERT_EQUAL(0, EWatchStopwatch_GetTenths(&watch));
 }
 
-void test_RunFor5Tenths(void)
+TEST_CASE("test_RunFor5Tenths(void)")
 {
+	setUp();
+
 	int i;
 	EWatchStopwatch_Dispatch(&watch, ST_TOGGLE_SIG);
 
@@ -40,8 +45,10 @@ void test_RunFor5Tenths(void)
 	TEST_ASSERT_EQUAL(5, EWatchStopwatch_GetTenths(&watch));
 }
 
-void test_UpdateAccordingToClock(void)
+TEST_CASE("test_UpdateAccordingToClock(void)")
 {
+	setUp();
+
 	int ticks = convertToTicks(3, 30, 20, 2);
 	int i;
 	
@@ -55,8 +62,10 @@ void test_UpdateAccordingToClock(void)
 	checkTime(3, 30, 20, 2, &watch.internal);
 }
 
-void test_StartStopwatchWaitForTimeAndStopNextClockEventsAreDiscarded(void)
+TEST_CASE("test_StartStopwatchWaitForTimeAndStopNextClockEventsAreDiscarded(void)")
 {
+	setUp();
+
 	int ticks = convertToTicks(6, 20, 10, 5);
 	int i;
 	
@@ -77,8 +86,10 @@ void test_StartStopwatchWaitForTimeAndStopNextClockEventsAreDiscarded(void)
 	checkTime(6, 20, 10, 5, &watch.internal);	
 }
 
-void test_RestartFromWereLeft(void)
+TEST_CASE("test_RestartFromWereLeft(void)")
 {
+	setUp();
+
 	int ticks = convertToTicks(3, 30, 20, 2);
 	int i;
   
@@ -97,8 +108,10 @@ void test_RestartFromWereLeft(void)
 	checkTime(3, 30, 20, 2, &watch.internal);
 }
 
-void test_ResetWhenResetSignalIsReceived(void)
+TEST_CASE("test_ResetWhenResetSignalIsReceived(void)")
 {
+	setUp();
+
 	int ticks = convertToTicks(1, 10, 11, 0);
 	int i;
 
@@ -117,8 +130,10 @@ void test_ResetWhenResetSignalIsReceived(void)
 	checkTime(0, 0, 0, 0, &watch.internal);
 }
 
-void test_ResetDoesNothingWhenInRunningState(void)
+TEST_CASE("test_ResetDoesNothingWhenInRunningState(void)")
 {
+	setUp();
+
 	int ticks = convertToTicks(1, 10, 11, 0);
 	int i;
 
@@ -138,8 +153,10 @@ void test_ResetDoesNothingWhenInRunningState(void)
 	checkTime(1, 10, 11, 0, &watch.internal);
 }
 
-void test_DoubleToggleReturnsToStop(void)
+TEST_CASE("test_DoubleToggleReturnsToStop(void)")
 {
+	setUp();
+
 	EWatchStopwatch_Dispatch(&watch, ST_TOGGLE_SIG);
 	EWatchStopwatch_Dispatch(&watch, ST_TOGGLE_SIG);
 
