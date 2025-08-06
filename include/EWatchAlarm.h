@@ -25,7 +25,6 @@ typedef struct EWatchAlarm_ EWatchAlarm;
 typedef void (*EWatchAlarmState)(EWatchAlarm*, enum EWatchAlarmSignal);
 
 struct EWatchAlarm_ {
-    // 	ClockCounter alarmCounter;
     EWatchTimeset expirationTime;
     ClockCounter* external;
     enum AlarmState alarmState;

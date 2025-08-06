@@ -23,8 +23,6 @@ enum EWatchSignal {
     ENTRY_SIG
 };
 
-// enum EWatchSignal {CLOCK_TICK};
-// enum EWatchControlSignal {SET_ALARM_MODE = 3, SET_CLOCK_MODE};
 enum EWatchState {
     CLOCK_STATE,
     ALARM_STATE,
@@ -41,7 +39,6 @@ struct EWatch_ {
     int tenths;
     enum AlarmState alarmState;
     enum EWatchMode mode;
-    // int counter;
 
     EWatchControl control;
     EWatchClock clock;
