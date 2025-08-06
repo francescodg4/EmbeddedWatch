@@ -26,14 +26,19 @@ typedef struct {
 } EWatchTimeset;
 
 void EWatchTimeset_Init(EWatchTimeset* self);
+
 void EWatchTimeset_Dispatch(EWatchTimeset* self, enum EWatchTimesetSignal sig);
 
 void EWatchTimeset_Set(EWatchTimeset* self, unsigned int tenths);
 
 unsigned int EWatchTimeset_GetCount(EWatchTimeset* self);
+
 int EWatchTimeset_GetHours(EWatchTimeset* self);
+
 int EWatchTimeset_GetMinutes(EWatchTimeset* self);
+
 int EWatchTimeset_GetSeconds(EWatchTimeset* self);
+
 int EWatchTimeset_GetTenths(EWatchTimeset* self);
 
 #ifdef __cplusplus

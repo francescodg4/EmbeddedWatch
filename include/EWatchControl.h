@@ -23,8 +23,11 @@ typedef struct {
 } EWatchControl;
 
 void EWatchControl_Init(EWatchControl* self);
+
 void EWatchControl_Transition(EWatchControl* self, enum EWatchControlState state);
+
 void EWatchControl_Dispatch(EWatchControl* self, enum EWatchControlSignal sig);
+
 enum EWatchMode EWatchControl_GetMode(EWatchControl* self);
 
 #ifdef __cplusplus

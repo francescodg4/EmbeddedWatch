@@ -14,14 +14,19 @@ typedef struct {
 } EWatchClock;
 
 void EWatchClock_Init(EWatchClock* self);
+
 void EWatchClock_Dispatch(EWatchClock* self, enum EWatchClockSignal sig);
 
 void EWatchClock_Set(EWatchClock* self, unsigned int tenths);
 
 unsigned int EWatchClock_GetCount(EWatchClock* self);
+
 int EWatchClock_GetHours(EWatchClock* self);
+
 int EWatchClock_GetMinutes(EWatchClock* self);
+
 int EWatchClock_GetSeconds(EWatchClock* self);
+
 int EWatchClock_GetTenths(EWatchClock* self);
 
 #ifdef __cplusplus
