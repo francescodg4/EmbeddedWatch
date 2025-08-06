@@ -2,7 +2,7 @@
 
 void EWatchControl_Init(EWatchControl* this)
 {
-    this->state = CLOCK_STATE;
+    this->state = CONTROL_CLOCK_STATE;
     this->mode = CLOCK_MODE;
 }
 
@@ -14,14 +14,14 @@ void EWatchControl_Transition(EWatchControl* this, enum EWatchControlState state
 void EWatchControl_Dispatch(EWatchControl* this, enum EWatchControlSignal sig)
 {
     switch (this->state) {
-    case CLOCK_STATE:
+    case CONTROL_CLOCK_STATE:
         switch (sig) {
         case SET_ALARM_MODE:
-            EWatchControl_Transition(this, ALARM_STATE);
+            EWatchControl_Transition(this, CONTROL_ALARM_STATE);
             this->mode = ALARM_MODE;
             break;
         case SET_CLOCK_MODE:
-            EWatchControl_Transition(this, CLOCK_STATE);
+            EWatchControl_Transition(this, CONTROL_CLOCK_STATE);
             this->mode = CLOCK_MODE;
             break;
         default:
@@ -29,12 +29,12 @@ void EWatchControl_Dispatch(EWatchControl* this, enum EWatchControlSignal sig)
         }
         break;
 
-    case ALARM_STATE:
+    case CONTROL_ALARM_STATE:
         switch (sig) {
         case SET_ALARM_MODE:
             break;
         case SET_CLOCK_MODE:
-            EWatchControl_Transition(this, CLOCK_STATE);
+            EWatchControl_Transition(this, CONTROL_CLOCK_STATE);
             this->mode = CLOCK_MODE;
             break;
         default:

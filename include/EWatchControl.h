@@ -1,6 +1,8 @@
 #ifndef EWATCHCONTROL_H
 #define EWATCHCONTROL_H
 
+#include "EWatchEnums.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -10,14 +12,9 @@ enum EWatchControlSignal {
     SET_ALARM_MODE
 };
 
-enum EWatchMode {
-    CLOCK_MODE,
-    ALARM_MODE
-};
-
 enum EWatchControlState {
-    CLOCK_STATE,
-    ALARM_STATE
+    CONTROL_CLOCK_STATE,
+    CONTROL_ALARM_STATE
 };
 
 typedef struct {
@@ -25,10 +22,10 @@ typedef struct {
     enum EWatchControlState state;
 } EWatchControl;
 
-void EWatchControl_Init(EWatchControl* this);
-void EWatchControl_Transition(EWatchControl* this, enum EWatchControlState state);
-void EWatchControl_Dispatch(EWatchControl* this, enum EWatchControlSignal sig);
-enum EWatchMode EWatchControl_GetMode(EWatchControl* this);
+void EWatchControl_Init(EWatchControl* self);
+void EWatchControl_Transition(EWatchControl* self, enum EWatchControlState state);
+void EWatchControl_Dispatch(EWatchControl* self, enum EWatchControlSignal sig);
+enum EWatchMode EWatchControl_GetMode(EWatchControl* self);
 
 #ifdef __cplusplus
 }
