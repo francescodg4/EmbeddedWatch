@@ -1,6 +1,10 @@
 #ifndef EWATCH_H
 #define EWATCH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // #include "EWatchControl.h"
 #include "EWatchClock.h"
 #include "EWatchStopwatch.h"
@@ -41,16 +45,17 @@ struct EWatch_ {
 	// State state;
 };
 
-void EWatch_Init(EWatch *this);
-int EWatch_GetHours(EWatch *this);
-int EWatch_GetMinutes(EWatch *this);
-int EWatch_GetSeconds(EWatch *this);
-int EWatch_GetTenths(EWatch *this);
-enum EWatchMode EWatch_GetMode(EWatch *this);
-enum AlarmState EWatch_GetAlarmState(EWatch *this);
+void EWatch_Init(EWatch *self);
+int EWatch_GetHours(EWatch *self);
+int EWatch_GetMinutes(EWatch *self);
+int EWatch_GetSeconds(EWatch *self);
+int EWatch_GetTenths(EWatch *self);
+enum EWatchMode EWatch_GetMode(EWatch *self);
+enum AlarmState EWatch_GetAlarmState(EWatch *self);
+void EWatch_Dispatch(EWatch *self, enum EWatchSignal sig);
 
-void EWatch_Dispatch(EWatch *this, enum EWatchSignal sig);
-// void EWatch_Dispatch(EWatch *this, unsigned int sig);
-// void EWatch_Dispatch(EWatch *this, EWatchSignal sig);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* EWATCH_H */

@@ -4,6 +4,10 @@
 #include "ClockCounter.h"
 #include "EWatchTimeset.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum AlarmState {ALARM_OFF, ALARM_ON, ALARM_EXPIRED};
 enum EWatchAlarmSignal {AL_ALARM_SET_SIG, AL_CLOCK_TICK_SIG, AL_INC_SIG, AL_DEC_SIG};
 
@@ -18,11 +22,15 @@ struct EWatchAlarm_ {
 	EWatchAlarmState state;
 };
 
-void EWatchAlarm_Init(EWatchAlarm *this, ClockCounter *external);
-void EWatchAlarm_Dispatch(EWatchAlarm *this, enum EWatchAlarmSignal sig);
+void EWatchAlarm_Init(EWatchAlarm *self, ClockCounter *external);
+void EWatchAlarm_Dispatch(EWatchAlarm *self, enum EWatchAlarmSignal sig);
 
-enum AlarmState EWatchAlarm_GetAlarmState(EWatchAlarm *this);
-int EWatchAlarm_GetHours(EWatchAlarm *this);
-int EWatchAlarm_GetMinutes(EWatchAlarm *this);
+enum AlarmState EWatchAlarm_GetAlarmState(EWatchAlarm *self);
+int EWatchAlarm_GetHours(EWatchAlarm *self);
+int EWatchAlarm_GetMinutes(EWatchAlarm *self);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* EWATCHALARM_H */
