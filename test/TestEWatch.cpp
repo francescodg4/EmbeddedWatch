@@ -49,6 +49,26 @@ static void setUp(void)
     EWatch_Init(&watch);
 }
 
+static void setAlarmTo(EWatchAlarm* a, int hours, int minutes)
+{
+    EWatchTimeset_Set(&a->expirationTime, 0);
+
+    EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set hours
+
+    int i;
+    for (i = 0; i < hours; i++) {
+        EWatchAlarm_Dispatch(a, AL_INC_SIG);
+    }
+
+    EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set minutes
+
+    for (i = 0; i < minutes; i++) {
+        EWatchAlarm_Dispatch(a, AL_INC_SIG);
+    }
+
+    EWatchAlarm_Dispatch(a, AL_ALARM_SET_SIG); // Set alarm
+}
+
 TEST_CASE("At intialization EWatch is in ClockMode")
 {
     EWatch watch;
@@ -63,7 +83,7 @@ TEST_CASE("Receiving ClockTick events")
 {
     setUp();
 
-    int ticks = convertToTicks(13, 23, 22, 0);
+    int ticks = utils::convertToTicks(13, 23, 22, 0);
     int i;
 
     for (i = 0; i < ticks; i++) {
@@ -96,7 +116,7 @@ TEST_CASE("Start stopwatch and update output", "[stopwatch]")
 {
     setUp();
 
-    int ticks = convertToTicks(0, 0, 2, 9);
+    int ticks = utils::convertToTicks(0, 0, 2, 9);
 
     EWatch_Dispatch(&watch, EW_STOPWATCH_MODE_SIG);
     EWatch_Dispatch(&watch, EW_BUTTON_P_SIG);
@@ -137,8 +157,8 @@ TEST_CASE("Time is running even if we are in StopwatchMode", "[stopwatch]")
     char stopwatchOutput[OUT_SIZE];
     char clockOutput[OUT_SIZE];
 
-    int time = convertToTicks(12, 15, 30, 1);
-    int additional = convertToTicks(0, 0, 20, 0);
+    int time = utils::convertToTicks(12, 15, 30, 1);
+    int additional = utils::convertToTicks(0, 0, 20, 0);
 
     // At 12:15:30 1, switch to stopwatch
     int i;
@@ -210,7 +230,7 @@ TEST_CASE("SetClockWhenSwitchViewBackToClockMode", "[timeset]")
 {
     setUp();
 
-    int time = convertToTicks(2, 4, 11, 7);
+    int time = utils::convertToTicks(2, 4, 11, 7);
     EWatchClock_Set(&watch.clock, time);
 
     // Add 1 hour
@@ -483,6 +503,7 @@ TEST_CASE("Alarm can be changed even after it has been activated", "[alarm]")
     enum AlarmState alarmState;
 
     EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+
     setAlarmTo(&watch.alarm, 13, 30);
 
     alarmState = EWatch_GetAlarmState(&watch);

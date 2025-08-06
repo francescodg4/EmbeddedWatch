@@ -6,14 +6,12 @@ extern "C" {
 #endif
 
 #include <ClockCounter.h>
-#include <EWatchAlarm.h>
 
 #ifdef __cplusplus
 }
 #endif
 
-int convertToTicks(int hours, int minutes, int seconds, int tenths);
-void setAlarmTo(EWatchAlarm* a, int hours, int minutes);
+namespace utils {
 
 void checkTime(
     int expectedHours,
@@ -21,6 +19,13 @@ void checkTime(
     int expectedSeconds,
     int expectedTenths,
     ClockCounter* c);
+
+inline int convertToTicks(int hours, int minutes, int seconds, int tenths)
+{
+    return convertToTenths(hours, minutes, seconds, tenths);
+}
+
+} // namespace utils
 
 #define TEST_ASSERT_EQUAL(expected, actual) \
     REQUIRE(expected == actual);

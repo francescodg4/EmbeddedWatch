@@ -101,7 +101,7 @@ TEST_CASE("Count to an arbitrary time", "[watch]")
     const int seconds = 30;
     const int tenths = 9;
 
-    for (int i = 0; i < convertToTicks(hours, minutes, seconds, tenths); i++) {
+    for (int i = 0; i < utils::convertToTicks(hours, minutes, seconds, tenths); i++) {
         EWatchClock_Dispatch(&watch, CLOCK_TICK);
     }
 
@@ -115,7 +115,7 @@ TEST_CASE("Count to day limit", "[watch]")
 {
     EWatchClock_Init(&watch);
 
-    for (int i = 0; i < convertToTicks(23, 59, 59, 9); i++) {
+    for (int i = 0; i < utils::convertToTicks(23, 59, 59, 9); i++) {
         EWatchClock_Dispatch(&watch, CLOCK_TICK);
     }
 

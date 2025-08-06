@@ -28,7 +28,7 @@ static void setAlarmTo(EWatchAlarm* a, int hours, int minutes)
 
 static void waitFor(int hours, int minutes, int seconds, int tenths)
 {
-    int ticks = convertToTicks(12, 0, 0, 0);
+    int ticks = utils::convertToTicks(12, 0, 0, 0);
     int i;
 
     for (i = 0; i < ticks; i++) {
