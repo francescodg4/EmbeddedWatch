@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-#include "../ClockCounter.h"
-#include "../EWatchAlarm.h"
+#include <ClockCounter.h>
+#include <EWatchAlarm.h>
 
 #ifdef __cplusplus
 }
