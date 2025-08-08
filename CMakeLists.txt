@@ -18,3 +18,4 @@ add_library(embeddedwatch
 target_include_directories(embeddedwatch PUBLIC include)
 
 add_subdirectory(test)
+add_subdirectory(application)

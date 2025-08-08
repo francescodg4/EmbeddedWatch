@@ -41,7 +41,7 @@ void EWatchTimeset_Dispatch(EWatchTimeset* this, enum EWatchTimesetSignal sig)
     case TS_SET_MINUTES_STATE:
         switch (sig) {
         case TS_TOGGLE_MODE_SIG:
-            transition(this, TS_SET_HOURS_STATE);
+            transition(this, TS_CONFIRMED_STATE);
             break;
 
         case TS_INC_SIG:
@@ -53,6 +53,17 @@ void EWatchTimeset_Dispatch(EWatchTimeset* this, enum EWatchTimesetSignal sig)
             break;
 
         case TS_SET_HOURS_MODE_SIG:
+            transition(this, TS_SET_HOURS_STATE);
+            break;
+
+        default:
+            break;
+        }
+        break;
+
+    case TS_CONFIRMED_STATE:
+        switch (sig) {
+        case TS_TOGGLE_MODE_SIG:
             transition(this, TS_SET_HOURS_STATE);
             break;
 

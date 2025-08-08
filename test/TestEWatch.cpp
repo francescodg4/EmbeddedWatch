@@ -1,6 +1,7 @@
 #include <catch2/catch_all.hpp>
 
 #include <EWatch.h>
+#include "EWatchTimeset.h"
 #include "utility.h"
 
 #define OUT_SIZE 255
@@ -210,7 +211,7 @@ TEST_CASE("Stopwatch will continue to run even if the current view changes", "[s
 }
 
 // --------------- Timeset mode --------------- //
-TEST_CASE("TimesetModeInitializedWithCurrentTime", "[timeset]")
+TEST_CASE("Timeset mode initialized with current time", "[timeset]")
 {
     setUp();
 
@@ -226,7 +227,7 @@ TEST_CASE("TimesetModeInitializedWithCurrentTime", "[timeset]")
     TEST_ASSERT_EQUAL_STRING("Mode:3 2:20:0 0", out);
 }
 
-TEST_CASE("SetClockWhenSwitchViewBackToClockMode", "[timeset]")
+TEST_CASE("Set clock when switch view back to ClockMode", "[timeset]")
 {
     setUp();
 
@@ -276,6 +277,32 @@ TEST_CASE("Switch to TimeSetMode and decrement hours and minutes", "[timeset]")
     TEST_ASSERT_EQUAL_STRING("Mode:0 11:4:0 0", out);
 }
 
+TEST_CASE("After hours and minutes have been set, TimeSet should stall in a 'Confirm' state", "[timeset]")
+{
+    setUp();
+
+    // Switch to TimeSet mode
+    EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+
+    // Should be in 'SetHour' state
+    REQUIRE(EWatch_GetTimesetState(&watch) == TS_SET_HOURS_STATE);
+
+    // Switch to 'SetMinutes' state
+    EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+    REQUIRE(EWatch_GetTimesetState(&watch) == TS_SET_MINUTES_STATE);
+
+    // Switch to a 'Confirmed' state
+    EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+    REQUIRE(EWatch_GetTimesetState(&watch) == TS_CONFIRMED_STATE);
+
+    // Switch back to clock mode
+    EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
+
+    output(&watch, out);
+
+    TEST_ASSERT_EQUAL_STRING("Mode:0 0:0:0 0", out);
+}
+
 TEST_CASE("Returning to hours after minutes changed is allowed", "[timeset]")
 {
     setUp();
@@ -296,8 +323,11 @@ TEST_CASE("Returning to hours after minutes changed is allowed", "[timeset]")
         EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
     }
 
+    // Confirm, then return to 'SetHours'
+    EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
     // Return to hours
     EWatch_Dispatch(&watch, EW_TIMESET_MODE_SIG);
+
     EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
 
     // Switch back to clock mode

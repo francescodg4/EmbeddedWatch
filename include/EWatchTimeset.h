@@ -17,7 +17,8 @@ enum EWatchTimesetSignal {
 
 enum EWatchTimesetState {
     TS_SET_HOURS_STATE,
-    TS_SET_MINUTES_STATE
+    TS_SET_MINUTES_STATE,
+    TS_CONFIRMED_STATE
 };
 
 typedef struct {

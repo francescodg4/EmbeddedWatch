@@ -45,6 +45,7 @@ struct EWatch_ {
     EWatchClock clock;
     EWatchStopwatch stopwatch;
     EWatchAlarm alarm;
+    EWatchTimeset timeset;
 
     void (*state)(EWatch*, enum EWatchSignal);
 };
@@ -62,6 +63,8 @@ int EWatch_GetTenths(EWatch* self);
 enum EWatchMode EWatch_GetMode(EWatch* self);
 
 enum AlarmState EWatch_GetAlarmState(EWatch* self);
+
+enum EWatchTimesetState EWatch_GetTimesetState(EWatch* self);
 
 void EWatch_Dispatch(EWatch* self, enum EWatchSignal sig);
 
