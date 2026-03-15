@@ -35,7 +35,7 @@ add_executable(embeddedwatch_viewer
     viewer/src/main.cpp
 )
 
-target_link_libraries(embeddedwatch_viewer PRIVATE raylib)
+target_link_libraries(embeddedwatch_viewer PRIVATE raylib embeddedwatch)
 
 if(TEST_ENABLE)
     enable_testing()

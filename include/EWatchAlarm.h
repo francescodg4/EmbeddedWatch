@@ -14,6 +14,12 @@ enum AlarmState {
     ALARM_EXPIRED
 };
 
+enum AlarmDisplayState {
+    ALARM_DISPLAY_NONE,
+    ALARM_DISPLAY_SET_HOURS,
+    ALARM_DISPLAY_SET_MINUTES,
+};
+
 enum EWatchAlarmSignal {
     AL_ALARM_SET_SIG,
     AL_CLOCK_TICK_SIG,
@@ -29,6 +35,7 @@ struct EWatchAlarm_ {
     ClockCounter* external;
     enum AlarmState alarmState;
     EWatchAlarmState state;
+    enum AlarmDisplayState displayState;
 };
 
 void EWatchAlarm_Init(EWatchAlarm* self, ClockCounter* external);
@@ -36,6 +43,8 @@ void EWatchAlarm_Init(EWatchAlarm* self, ClockCounter* external);
 void EWatchAlarm_Dispatch(EWatchAlarm* self, enum EWatchAlarmSignal sig);
 
 enum AlarmState EWatchAlarm_GetAlarmState(EWatchAlarm* self);
+
+enum AlarmDisplayState EWatchAlarm_GetAlarmDisplayState(EWatchAlarm* self);
 
 int EWatchAlarm_GetHours(EWatchAlarm* self);
 

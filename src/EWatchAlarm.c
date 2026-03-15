@@ -43,9 +43,18 @@ enum AlarmState EWatchAlarm_GetAlarmState(EWatchAlarm* this)
     return this->alarmState;
 }
 
+enum AlarmDisplayState EWatchAlarm_GetAlarmDisplayState(EWatchAlarm* this) { return this->displayState; }
+
 static void transition(EWatchAlarm* this, EWatchAlarmState state)
 {
     this->state = state;
+    if (this->state == setHoursState) {
+        this->displayState = ALARM_DISPLAY_SET_HOURS;
+    } else if (this->state == setMinutesState) {
+        this->displayState = ALARM_DISPLAY_SET_MINUTES;
+    } else {
+        this->displayState = ALARM_DISPLAY_NONE;
+    }
 }
 
 static void alarmOffState(EWatchAlarm* this, enum EWatchAlarmSignal sig)

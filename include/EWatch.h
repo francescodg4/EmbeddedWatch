@@ -46,6 +46,8 @@ struct EWatch_ {
     EWatchStopwatch stopwatch;
     EWatchAlarm alarm;
 
+    EWatchTimeset timeset;
+
     void (*state)(EWatch*, enum EWatchSignal);
 };
 
