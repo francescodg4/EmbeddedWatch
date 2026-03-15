@@ -10,13 +10,12 @@ FetchContent_MakeAvailable(Catch2)
 
 add_executable(
     embeddedwatch_test
-    # TestEWatch.cpp
-    # TestEWatchAlarm.cpp
-    # TestEWatchClock.cpp
-    # TestEWatchStopwatch.cpp
-    # TestEWatchTimeset.cpp
-    # utility.cpp
-    test_one.cpp
+    test_ewatch.cpp
+    test_ewatch_alarm.cpp
+    test_ewatch_clock.cpp
+    test_ewatch_stopwatch.cpp
+    test_ewatch_timeset.cpp
+    utility.cpp
 )
 
 target_link_libraries(
