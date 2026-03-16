@@ -1,13 +1,7 @@
 #include "EWatch.h"
 #include "EWatchTimeset.h"
 
-// enum ChildFsm {CLOCK, CONTROL};
-
 static void updateOutput(EWatch* this, enum EWatchMode mode);
-
-// static void stopwatchOutput(EWatch *this);
-// static void clockOutput(EWatch *this);
-
 static void transition(EWatch* this, enum EWatchState state);
 static void clockState(EWatch* this, enum EWatchSignal sig);
 static void stopwatchState(EWatch* this, enum EWatchSignal sig);
@@ -25,13 +19,10 @@ void EWatch_Init(EWatch* this)
 
     transition(this, CLOCK_STATE);
     updateOutput(this, CLOCK_MODE);
-
-    // EWatchControl_Init(&this->control);
 }
 
 void EWatch_Dispatch(EWatch* this, enum EWatchSignal sig)
 {
-    /* Update concurrent time */
     if (sig == EW_CLOCK_TICK_SIG) {
         EWatchClock_Dispatch(&this->clock, CLOCK_TICK);
         EWatchStopwatch_Dispatch(&this->stopwatch, ST_CLOCK_TICK_SIG);
@@ -39,24 +30,6 @@ void EWatch_Dispatch(EWatch* this, enum EWatchSignal sig)
     }
 
     (*this->state)(this, sig);
-
-    /* switch (this->state) { */
-
-    /* case CLOCK_STATE: */
-    /* 	clockState(this, sig);		 */
-    /* 	break; */
-
-    /* case STOPWATCH_STATE: */
-    /* 	stopwatchState(this, sig); */
-    /* 	break; */
-
-    /* case TIMESET_STATE: */
-    /* 	timesetState(this, sig); */
-    /* 	break; */
-
-    /* default: */
-    /* 	break; */
-    // }
 }
 
 int EWatch_GetHours(EWatch* this)
@@ -89,13 +62,10 @@ enum AlarmState EWatch_GetAlarmState(EWatch* this)
     return EWatchAlarm_GetAlarmState(&this->alarm);
 }
 
-// --------------- Private functions --------------- //
-
 static void transition(EWatch* this, enum EWatchState state)
 {
     (*this->state)(this, EXIT_SIG);
 
-    /* State update */
     switch (state) {
 
     case CLOCK_STATE:
@@ -119,8 +89,6 @@ static void transition(EWatch* this, enum EWatchState state)
     }
 
     (*this->state)(this, ENTRY_SIG);
-
-    // 		this->state = state;
 }
 
 static void timesetState(EWatch* this, enum EWatchSignal sig)
@@ -158,12 +126,6 @@ static void timesetState(EWatch* this, enum EWatchSignal sig)
 
     case EW_CLOCK_MODE_SIG:
         transition(this, CLOCK_STATE);
-
-        /* Update clock */
-        /* int hours = EWatchTimeset_GetHours(&timeset); */
-        /* int minutes = EWatchTimeset_GetMinutes(&timeset); */
-        /* EWatchClock_Set(&this->clock, convertToTenths(hours, minutes, 0, 0)); */
-
         updateOutput(this, CLOCK_MODE);
         break;
 
@@ -192,9 +154,6 @@ static void clockState(EWatch* this, enum EWatchSignal sig)
 
     case EW_TIMESET_MODE_SIG:
         transition(this, TIMESET_STATE);
-        // Entry action
-        /* int time = EWatchClock_GetCount(&this->clock); */
-        /* EWatchTimeset_Set(&timeset, time); */
         updateOutput(this, TIMESET_STATE);
         break;
 
@@ -215,8 +174,6 @@ static void clockState(EWatch* this, enum EWatchSignal sig)
 
 static void stopwatchState(EWatch* this, enum EWatchSignal sig)
 {
-    // Open for extension: lap view can be implemented with + and -
-
     switch (sig) {
 
     case EW_BUTTON_P_SIG:
@@ -328,21 +285,3 @@ static void updateOutput(EWatch* this, enum EWatchMode mode)
     this->alarmState = EWatchAlarm_GetAlarmState(&this->alarm);
     this->mode = mode;
 }
-
-/* static void stopwatchOutput(EWatch *this) */
-/* { */
-/* 	this->hours = EWatchStopwatch_GetHours(&this->stopwatch); */
-/* 	this->minutes = EWatchStopwatch_GetMinutes(&this->stopwatch); */
-/* 	this->seconds = EWatchStopwatch_GetSeconds(&this->stopwatch); */
-/* 	this->tenths = EWatchStopwatch_GetTenths(&this->stopwatch); */
-/* 	this->mode = STOPWATCH_MODE; */
-/* } */
-
-/* static void clockOutput(EWatch *this) */
-/* { */
-/* 	this->hours = EWatchClock_GetHours(&this->clock); */
-/* 	this->minutes = EWatchClock_GetMinutes(&this->clock); */
-/* 	this->seconds = EWatchClock_GetSeconds(&this->clock); */
-/* 	this->tenths = EWatchClock_GetTenths(&this->clock); */
-/* 	this->mode = CLOCK_MODE; */
-/* } */
