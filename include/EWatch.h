@@ -10,6 +10,7 @@ extern "C" {
 #include "EWatchClock.h"
 #include "EWatchStopwatch.h"
 #include "EWatchAlarm.h"
+#include "EWatchTimeset.h"
 
 enum EWatchSignal {
     EW_CLOCK_TICK_SIG,
@@ -45,6 +46,7 @@ struct EWatch_ {
     EWatchClock clock;
     EWatchStopwatch stopwatch;
     EWatchAlarm alarm;
+    EWatchTimeset timeset;
 
     void (*state)(EWatch*, enum EWatchSignal);
 };
