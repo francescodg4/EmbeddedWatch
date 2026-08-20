@@ -17,4 +17,8 @@ add_library(embeddedwatch
 
 target_include_directories(embeddedwatch PUBLIC include)
 
-add_subdirectory(test)
+option(BUILD_TESTING "Build the test suite" ON)
+
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
