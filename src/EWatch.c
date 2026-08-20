@@ -26,8 +26,6 @@ void EWatch_Init(EWatch* this)
 
     transition(this, CLOCK_STATE);
     updateOutput(this, CLOCK_MODE);
-
-    // EWatchControl_Init(&this->control);
 }
 
 void EWatch_Dispatch(EWatch* this, enum EWatchSignal sig)
