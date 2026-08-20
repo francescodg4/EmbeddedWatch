@@ -21,3 +21,22 @@ jobs:
 
       - name: Run tests
         run: ./build/test/run-test
+
+  static-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cppcheck
+        run: sudo apt-get update && sudo apt-get install -y cppcheck
+
+      # constParameterPointer is suppressed: it would have cppcheck suggest
+      # `const` on every getter's self pointer, which is a wider API-style
+      # change than a static-analysis job should make on its own.
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=warning,performance,portability,style \
+            --error-exitcode=1 --suppress=constParameterPointer \
+            -Iinclude src/
