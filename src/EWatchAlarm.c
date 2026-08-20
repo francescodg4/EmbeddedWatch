@@ -53,11 +53,6 @@ static void alarmOffState(EWatchAlarm* this, enum EWatchAlarmSignal sig)
     switch (sig) {
     case AL_ALARM_SET_SIG:
         transition(this, setHoursState);
-
-        // prevExpirationTime = ClockCounter_GetCount(&this->expirationTime);
-        // EWatchTimeset_Init(&timeset);
-        // EWatchTimeset_Set(&this->expirationTime, prevExpirationTime);
-
         break;
 
     default:
