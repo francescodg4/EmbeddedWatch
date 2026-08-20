@@ -1,7 +1,6 @@
 #include "EWatch.h"
 #include "EWatchTimeset.h"
 
-static EWatchTimeset timeset;
 static void updateOutput(EWatch* self, enum EWatchMode mode);
 
 static void transition(EWatch* self, enum EWatchState state);
@@ -14,7 +13,7 @@ void EWatch_Init(EWatch* self)
 {
     EWatchClock_Init(&self->clock);
     EWatchStopwatch_Init(&self->stopwatch);
-    EWatchTimeset_Init(&timeset);
+    EWatchTimeset_Init(&self->timeset);
     EWatchAlarm_Init(&self->alarm, &self->clock.counter);
 
     self->state = clockState;
@@ -106,27 +105,27 @@ static void timesetState(EWatch* self, enum EWatchSignal sig)
     switch (sig) {
     case ENTRY_SIG:
         time = EWatchClock_GetCount(&self->clock);
-        EWatchTimeset_Set(&timeset, time);
+        EWatchTimeset_Set(&self->timeset, time);
         break;
 
     case EXIT_SIG:
-        hours = EWatchTimeset_GetHours(&timeset);
-        minutes = EWatchTimeset_GetMinutes(&timeset);
+        hours = EWatchTimeset_GetHours(&self->timeset);
+        minutes = EWatchTimeset_GetMinutes(&self->timeset);
         EWatchClock_Set(&self->clock, convertToTenths(hours, minutes, 0, 0));
         break;
 
     case EW_BUTTON_P_SIG:
-        EWatchTimeset_Dispatch(&timeset, TS_INC_SIG);
+        EWatchTimeset_Dispatch(&self->timeset, TS_INC_SIG);
         updateOutput(self, TIMESET_MODE);
         break;
 
     case EW_BUTTON_M_SIG:
-        EWatchTimeset_Dispatch(&timeset, TS_DEC_SIG);
+        EWatchTimeset_Dispatch(&self->timeset, TS_DEC_SIG);
         updateOutput(self, TIMESET_MODE);
         break;
 
     case EW_TIMESET_MODE_SIG:
-        EWatchTimeset_Dispatch(&timeset, TS_TOGGLE_MODE_SIG);
+        EWatchTimeset_Dispatch(&self->timeset, TS_TOGGLE_MODE_SIG);
         updateOutput(self, TIMESET_MODE);
         break;
 
@@ -259,8 +258,8 @@ static void updateOutput(EWatch* self, enum EWatchMode mode)
 {
     switch (mode) {
     case TIMESET_MODE:
-        self->hours = EWatchTimeset_GetHours(&timeset);
-        self->minutes = EWatchTimeset_GetMinutes(&timeset);
+        self->hours = EWatchTimeset_GetHours(&self->timeset);
+        self->minutes = EWatchTimeset_GetMinutes(&self->timeset);
         self->seconds = 0;
         self->tenths = 0;
         break;
