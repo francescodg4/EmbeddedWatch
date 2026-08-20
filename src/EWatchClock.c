@@ -1,43 +1,43 @@
 #include "EWatchClock.h"
 
-void EWatchClock_Init(EWatchClock* this)
+void EWatchClock_Init(EWatchClock* self)
 {
-    ClockCounter_Init(&this->counter);
+    ClockCounter_Init(&self->counter);
 }
 
-void EWatchClock_Dispatch(EWatchClock* this, enum EWatchClockSignal sig)
+void EWatchClock_Dispatch(EWatchClock* self, enum EWatchClockSignal sig)
 {
     if (sig == CLOCK_TICK) {
-        ClockCounter_Increment(&this->counter, 1);
+        ClockCounter_Increment(&self->counter, 1);
     }
 }
 
-int EWatchClock_GetHours(EWatchClock* this)
+int EWatchClock_GetHours(EWatchClock* self)
 {
-    return ClockCounter_GetHours(&this->counter);
+    return ClockCounter_GetHours(&self->counter);
 }
 
-int EWatchClock_GetMinutes(EWatchClock* this)
+int EWatchClock_GetMinutes(EWatchClock* self)
 {
-    return ClockCounter_GetMinutes(&this->counter);
+    return ClockCounter_GetMinutes(&self->counter);
 }
 
-int EWatchClock_GetSeconds(EWatchClock* this)
+int EWatchClock_GetSeconds(EWatchClock* self)
 {
-    return ClockCounter_GetSeconds(&this->counter);
+    return ClockCounter_GetSeconds(&self->counter);
 }
 
-int EWatchClock_GetTenths(EWatchClock* this)
+int EWatchClock_GetTenths(EWatchClock* self)
 {
-    return ClockCounter_GetTenths(&this->counter);
+    return ClockCounter_GetTenths(&self->counter);
 }
 
-void EWatchClock_Set(EWatchClock* this, unsigned int tenths)
+void EWatchClock_Set(EWatchClock* self, unsigned int tenths)
 {
-    ClockCounter_Set(&this->counter, tenths);
+    ClockCounter_Set(&self->counter, tenths);
 }
 
-unsigned int EWatchClock_GetCount(EWatchClock* this)
+unsigned int EWatchClock_GetCount(EWatchClock* self)
 {
-    return ClockCounter_GetCount(&this->counter);
+    return ClockCounter_GetCount(&self->counter);
 }
