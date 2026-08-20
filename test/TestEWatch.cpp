@@ -539,3 +539,39 @@ TEST_CASE("Alarm can be changed even after it has been activated", "[alarm]")
     alarmState = EWatch_GetAlarmState(&watch);
     TEST_ASSERT_EQUAL_MESSAGE(ALARM_EXPIRED, alarmState, "Expected ALARM_EXPIRED");
 }
+
+TEST_CASE("Alarm set for midnight expires exactly at day rollover", "[alarm]")
+{
+    setUp();
+
+    EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Enter alarm mode (default 12:0, off)
+    EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // -> Enters in Setting -> Set hours
+
+    // Decrement 12 hours: 12:0 -> 0:0
+    int i;
+    for (i = 0; i < 12; i++) {
+        EWatch_Dispatch(&watch, EW_BUTTON_M_SIG);
+    }
+
+    EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set minutes (already 0)
+    EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG); // Set alarm
+
+    output(&watch, out);
+    TEST_ASSERT_EQUAL_STRING("Mode:1 0:0:0 0 on", out);
+
+    // Run the clock to one tick before the day rolls over
+    EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
+    waitFor(23, 59, 59, 9);
+
+    EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+    output(&watch, out);
+    TEST_ASSERT_EQUAL_STRING("Mode:1 0:0:0 0 on", out); // Not expired yet
+
+    // One more tick wraps the day counter from 23:59:59.9 back to 0:0:0.0
+    EWatch_Dispatch(&watch, EW_CLOCK_MODE_SIG);
+    EWatch_Dispatch(&watch, EW_CLOCK_TICK_SIG);
+
+    EWatch_Dispatch(&watch, EW_ALARM_MODE_SIG);
+    output(&watch, out);
+    TEST_ASSERT_EQUAL_STRING("Mode:1 0:0:0 0 expired", out);
+}
