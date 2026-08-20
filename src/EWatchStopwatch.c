@@ -1,33 +1,33 @@
 #include "EWatchStopwatch.h"
 
-static void transition(EWatchStopwatch* this, enum EWatchStopwatchState state)
+static void transition(EWatchStopwatch* self, enum EWatchStopwatchState state)
 {
-    this->state = state;
+    self->state = state;
 }
 
-static void reset(EWatchStopwatch* this)
+static void reset(EWatchStopwatch* self)
 {
-    ClockCounter_Reset(&this->internal);
+    ClockCounter_Reset(&self->internal);
 }
 
-void EWatchStopwatch_Init(EWatchStopwatch* this)
+void EWatchStopwatch_Init(EWatchStopwatch* self)
 {
-    ClockCounter_Init(&this->internal);
-    transition(this, ST_STOP_STATE);
+    ClockCounter_Init(&self->internal);
+    transition(self, ST_STOP_STATE);
 }
 
-void EWatchStopwatch_Dispatch(EWatchStopwatch* this, enum EWatchStopwatchSignal sig)
+void EWatchStopwatch_Dispatch(EWatchStopwatch* self, enum EWatchStopwatchSignal sig)
 {
-    switch (this->state) {
+    switch (self->state) {
     case ST_RUNNING_STATE:
         switch (sig) {
 
         case ST_CLOCK_TICK_SIG:
-            ClockCounter_Tick(&this->internal);
+            ClockCounter_Tick(&self->internal);
             break;
 
         case ST_TOGGLE_SIG:
-            transition(this, ST_STOP_STATE);
+            transition(self, ST_STOP_STATE);
             break;
 
         default:
@@ -40,11 +40,11 @@ void EWatchStopwatch_Dispatch(EWatchStopwatch* this, enum EWatchStopwatchSignal 
         switch (sig) {
 
         case ST_TOGGLE_SIG:
-            transition(this, ST_RUNNING_STATE);
+            transition(self, ST_RUNNING_STATE);
             break;
 
         case ST_RESET_SIG:
-            reset(this);
+            reset(self);
             break;
 
         default:
@@ -55,22 +55,22 @@ void EWatchStopwatch_Dispatch(EWatchStopwatch* this, enum EWatchStopwatchSignal 
     }
 }
 
-int EWatchStopwatch_GetHours(EWatchStopwatch* this)
+int EWatchStopwatch_GetHours(EWatchStopwatch* self)
 {
-    return ClockCounter_GetHours(&this->internal);
+    return ClockCounter_GetHours(&self->internal);
 }
 
-int EWatchStopwatch_GetMinutes(EWatchStopwatch* this)
+int EWatchStopwatch_GetMinutes(EWatchStopwatch* self)
 {
-    return ClockCounter_GetMinutes(&this->internal);
+    return ClockCounter_GetMinutes(&self->internal);
 }
 
-int EWatchStopwatch_GetSeconds(EWatchStopwatch* this)
+int EWatchStopwatch_GetSeconds(EWatchStopwatch* self)
 {
-    return ClockCounter_GetSeconds(&this->internal);
+    return ClockCounter_GetSeconds(&self->internal);
 }
 
-int EWatchStopwatch_GetTenths(EWatchStopwatch* this)
+int EWatchStopwatch_GetTenths(EWatchStopwatch* self)
 {
-    return ClockCounter_GetTenths(&this->internal);
+    return ClockCounter_GetTenths(&self->internal);
 }
