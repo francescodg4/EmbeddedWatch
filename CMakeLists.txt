@@ -12,9 +12,12 @@ add_library(embeddedwatch
   src/EWatchControl.c
   src/EWatchStopwatch.c
   src/EWatchTimeset.c
-  src/EWatchControl.c
 )
 
 target_include_directories(embeddedwatch PUBLIC include)
 
-add_subdirectory(test)
+option(BUILD_TESTING "Build the test suite" ON)
+
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
