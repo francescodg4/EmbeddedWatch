@@ -1,35 +1,35 @@
 #include "EWatchTimeset.h"
 
-static void transition(EWatchTimeset* this, enum EWatchTimesetState state)
+static void transition(EWatchTimeset* self, enum EWatchTimesetState state)
 {
-    this->state = state;
+    self->state = state;
 }
 
-void EWatchTimeset_Init(EWatchTimeset* this)
+void EWatchTimeset_Init(EWatchTimeset* self)
 {
-    transition(this, TS_SET_HOURS_STATE);
-    ClockCounter_Init(&this->internal);
+    transition(self, TS_SET_HOURS_STATE);
+    ClockCounter_Init(&self->internal);
 }
 
-void EWatchTimeset_Dispatch(EWatchTimeset* this, enum EWatchTimesetSignal sig)
+void EWatchTimeset_Dispatch(EWatchTimeset* self, enum EWatchTimesetSignal sig)
 {
-    switch (this->state) {
+    switch (self->state) {
     case TS_SET_HOURS_STATE:
         switch (sig) {
         case TS_TOGGLE_MODE_SIG:
-            transition(this, TS_SET_MINUTES_STATE);
+            transition(self, TS_SET_MINUTES_STATE);
             break;
 
         case TS_INC_SIG:
-            ClockCounter_Increment(&this->internal, TENTHS_IN_HOUR);
+            ClockCounter_Increment(&self->internal, TENTHS_IN_HOUR);
             break;
 
         case TS_DEC_SIG:
-            ClockCounter_Decrement(&this->internal, TENTHS_IN_HOUR);
+            ClockCounter_Decrement(&self->internal, TENTHS_IN_HOUR);
             break;
 
         case TS_SET_MINUTES_MODE_SIG:
-            transition(this, TS_SET_MINUTES_STATE);
+            transition(self, TS_SET_MINUTES_STATE);
             break;
 
         default:
@@ -41,19 +41,19 @@ void EWatchTimeset_Dispatch(EWatchTimeset* this, enum EWatchTimesetSignal sig)
     case TS_SET_MINUTES_STATE:
         switch (sig) {
         case TS_TOGGLE_MODE_SIG:
-            transition(this, TS_SET_HOURS_STATE);
+            transition(self, TS_SET_HOURS_STATE);
             break;
 
         case TS_INC_SIG:
-            ClockCounter_Increment(&this->internal, TENTHS_IN_MINUTE);
+            ClockCounter_Increment(&self->internal, TENTHS_IN_MINUTE);
             break;
 
         case TS_DEC_SIG:
-            ClockCounter_Decrement(&this->internal, TENTHS_IN_MINUTE);
+            ClockCounter_Decrement(&self->internal, TENTHS_IN_MINUTE);
             break;
 
         case TS_SET_HOURS_MODE_SIG:
-            transition(this, TS_SET_HOURS_STATE);
+            transition(self, TS_SET_HOURS_STATE);
             break;
 
         default:
@@ -66,32 +66,32 @@ void EWatchTimeset_Dispatch(EWatchTimeset* this, enum EWatchTimesetSignal sig)
     }
 }
 
-void EWatchTimeset_Set(EWatchTimeset* this, unsigned int tenths)
+void EWatchTimeset_Set(EWatchTimeset* self, unsigned int tenths)
 {
-    ClockCounter_Set(&this->internal, tenths);
+    ClockCounter_Set(&self->internal, tenths);
 }
 
-int EWatchTimeset_GetHours(EWatchTimeset* this)
+int EWatchTimeset_GetHours(EWatchTimeset* self)
 {
-    return ClockCounter_GetHours(&this->internal);
+    return ClockCounter_GetHours(&self->internal);
 }
 
-int EWatchTimeset_GetMinutes(EWatchTimeset* this)
+int EWatchTimeset_GetMinutes(EWatchTimeset* self)
 {
-    return ClockCounter_GetMinutes(&this->internal);
+    return ClockCounter_GetMinutes(&self->internal);
 }
 
-int EWatchTimeset_GetSeconds(EWatchTimeset* this)
+int EWatchTimeset_GetSeconds(EWatchTimeset* self)
 {
-    return ClockCounter_GetSeconds(&this->internal);
+    return ClockCounter_GetSeconds(&self->internal);
 }
 
-int EWatchTimeset_GetTenths(EWatchTimeset* this)
+int EWatchTimeset_GetTenths(EWatchTimeset* self)
 {
-    return ClockCounter_GetTenths(&this->internal);
+    return ClockCounter_GetTenths(&self->internal);
 }
 
-unsigned int EWatchTimeset_GetCount(EWatchTimeset* this)
+unsigned int EWatchTimeset_GetCount(EWatchTimeset* self)
 {
-    return ClockCounter_GetCount(&this->internal);
+    return ClockCounter_GetCount(&self->internal);
 }
