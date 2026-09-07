@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 #include "EWatchEnums.h"
-#include "EWatchControl.h"
 #include "EWatchClock.h"
 #include "EWatchStopwatch.h"
 #include "EWatchAlarm.h"
@@ -42,7 +41,6 @@ struct EWatch_ {
     enum AlarmState alarmState;
     enum EWatchMode mode;
 
-    EWatchControl control;
     EWatchClock clock;
     EWatchStopwatch stopwatch;
     EWatchAlarm alarm;

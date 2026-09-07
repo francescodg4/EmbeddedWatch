@@ -9,7 +9,6 @@ add_library(embeddedwatch
   src/EWatch.c
   src/EWatchAlarm.c
   src/EWatchClock.c
-  src/EWatchControl.c
   src/EWatchStopwatch.c
   src/EWatchTimeset.c
 )
