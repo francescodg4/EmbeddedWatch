@@ -42,6 +42,30 @@ cmake --build build --target run-test
 ./build/test/run-test
 ```
 
+## Desktop GUI
+
+An optional [raylib](https://www.raylib.com/) front end drives the watch
+state machine at 10 Hz and renders it with one of three themes, chosen at
+runtime with the **Select theme** button:
+
+- **Modern Glass** — frosted glass display, bento-grid mode cells and
+  tactile clay buttons (`skills/Graphics.md`).
+- **Winamp Modern** — metal frame, cobalt seven-segment LCD, spectrum
+  analyzer and transport deck (`skills/WINAMP.Graphics.md`).
+- **Emerald Box** — GBA-style pixel-grid storage box, rendered at half
+  resolution and upscaled 2x (`skills/Emerald.Graphics.md`).
+
+The GUI is off by default; enabling it fetches raylib on first configure:
+
+```sh
+cmake -S . -B build -DBUILD_GUI=ON
+cmake --build build --target ewatch-gui
+./build/gui/ewatch-gui
+```
+
+Keyboard shortcuts: `1`-`4` (or `C`/`A`/`S`/`E`) switch mode, `+`/`-` (or
+the arrow keys) adjust, and `T` opens the theme menu.
+
 ## License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for details.

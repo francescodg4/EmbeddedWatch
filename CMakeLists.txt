@@ -21,3 +21,9 @@ option(BUILD_TESTING "Build the test suite" ON)
 if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
+
+option(BUILD_GUI "Build the raylib desktop GUI" OFF)
+
+if(BUILD_GUI)
+  add_subdirectory(gui)
+endif()
