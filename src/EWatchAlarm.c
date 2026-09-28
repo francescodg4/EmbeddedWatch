@@ -43,6 +43,11 @@ enum AlarmState EWatchAlarm_GetAlarmState(EWatchAlarm* self)
     return self->alarmState;
 }
 
+int EWatchAlarm_IsSetting(EWatchAlarm* self)
+{
+    return self->state == setHoursState || self->state == setMinutesState;
+}
+
 static void transition(EWatchAlarm* self, EWatchAlarmState state)
 {
     self->state = state;

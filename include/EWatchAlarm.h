@@ -37,6 +37,9 @@ void EWatchAlarm_Dispatch(EWatchAlarm* self, enum EWatchAlarmSignal sig);
 
 enum AlarmState EWatchAlarm_GetAlarmState(EWatchAlarm* self);
 
+/* Non-zero while the alarm time is being edited (hours or minutes). */
+int EWatchAlarm_IsSetting(EWatchAlarm* self);
+
 int EWatchAlarm_GetHours(EWatchAlarm* self);
 
 int EWatchAlarm_GetMinutes(EWatchAlarm* self);

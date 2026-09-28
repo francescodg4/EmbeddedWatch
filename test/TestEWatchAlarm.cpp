@@ -127,3 +127,19 @@ TEST_CASE("Once alarm expires, an AlarmSet signal turns off the alarm", "[alarm]
 
     TEST_ASSERT_EQUAL_MESSAGE(ALARM_OFF, EWatchAlarm_GetAlarmState(&alarm), "Expected ALARM_OFF");
 }
+
+TEST_CASE("Report setting only while hours or minutes are being edited", "[alarm]")
+{
+    setUp();
+
+    TEST_ASSERT_EQUAL(0, EWatchAlarm_IsSetting(&alarm));
+
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // set hours
+    TEST_ASSERT_EQUAL(1, EWatchAlarm_IsSetting(&alarm));
+
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // set minutes
+    TEST_ASSERT_EQUAL(1, EWatchAlarm_IsSetting(&alarm));
+
+    EWatchAlarm_Dispatch(&alarm, AL_ALARM_SET_SIG); // confirm alarm
+    TEST_ASSERT_EQUAL(0, EWatchAlarm_IsSetting(&alarm));
+}
