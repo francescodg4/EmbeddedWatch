@@ -31,7 +31,10 @@ typedef struct {
     enum AlarmState alarmState;
     int alarmHours;
     int alarmMinutes;
+    int clockHours;
+    int clockMinutes;
     bool stopwatchRunning;
+    bool alarmEditing;
     bool editingHours;
     float time;
 } WatchView;
@@ -54,7 +57,7 @@ typedef struct {
 
 typedef struct {
     const char* name;
-    void (*layout)(GuiLayout* layout, int themeCount);
+    void (*layout)(GuiLayout* layout, int themeCount, enum EWatchMode mode);
     void (*draw)(const WatchView* view, const GuiLayout* layout, const GuiInput* input);
     void (*unload)(void);
 } Theme;
@@ -77,6 +80,9 @@ void Gui_UnloadFonts(void);
 const GuiFonts* Gui_Fonts(void);
 
 const char* Gui_ButtonLabel(enum GuiButton button, const WatchView* view);
+
+/* False for buttons that do nothing in `mode` (+ and - in clock mode); they are hidden. */
+bool Gui_ButtonAvailable(enum GuiButton button, enum EWatchMode mode);
 const char* Gui_ModeName(enum EWatchMode mode);
 const char* Gui_Hint(const WatchView* view);
 const char* Gui_AlarmStateName(enum AlarmState state);
@@ -94,5 +100,12 @@ void Gui_TextLeft(Font font, const char* text, Vector2 pos, float size, float sp
 /* Classic seven-segment digit; `digit` < 0 draws only unlit segments. */
 void Gui_SegmentDigit(Rectangle rect, float thickness, int digit, Color on, Color off, bool rounded);
 void Gui_SegmentColon(Rectangle rect, float thickness, Color color);
+
+/*
+ * Glyph for the + / - buttons: plus and minus, or in stopwatch mode
+ * play / pause for + and a backward circular arrow (reset) for -.
+ * `size` is the half-extent of the glyph, `thickness` its stroke width.
+ */
+void Gui_AdjustIcon(enum GuiButton button, const WatchView* view, Vector2 center, float size, float thickness, Color color);
 
 #endif /* GUI_H */

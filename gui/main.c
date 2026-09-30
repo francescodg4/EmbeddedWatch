@@ -33,8 +33,15 @@ static WatchView makeView(EWatch* watch, float elapsed)
     view.alarmState = EWatch_GetAlarmState(watch);
     view.alarmHours = EWatchAlarm_GetHours(&watch->alarm);
     view.alarmMinutes = EWatchAlarm_GetMinutes(&watch->alarm);
+    view.clockHours = EWatchClock_GetHours(&watch->clock);
+    view.clockMinutes = EWatchClock_GetMinutes(&watch->clock);
     view.stopwatchRunning = watch->stopwatch.state == ST_RUNNING_STATE;
-    view.editingHours = watch->timeset.state == TS_SET_HOURS_STATE;
+    view.alarmEditing = EWatchAlarm_IsSetting(&watch->alarm) != 0;
+    if (view.mode == ALARM_MODE) {
+        view.editingHours = watch->alarm.expirationTime.state == TS_SET_HOURS_STATE;
+    } else {
+        view.editingHours = watch->timeset.state == TS_SET_HOURS_STATE;
+    }
     view.time = elapsed;
     return view;
 }
@@ -66,6 +73,16 @@ static void pressButton(EWatch* watch, enum GuiButton button, GuiInput* input)
         break;
     default:
         break;
+    }
+}
+
+/* Hidden buttons get an empty hit box so they cannot be hovered or clicked. */
+static void hideUnavailable(GuiLayout* layout, enum EWatchMode mode)
+{
+    for (int i = 0; i < GB_COUNT; i++) {
+        if (!Gui_ButtonAvailable((enum GuiButton)i, mode)) {
+            layout->buttons[i] = (Rectangle) { 0 };
+        }
     }
 }
 
@@ -162,7 +179,8 @@ int main(void)
 
         const Theme* theme = THEMES[input.currentTheme];
         GuiLayout layout = { 0 };
-        theme->layout(&layout, THEME_COUNT);
+        theme->layout(&layout, THEME_COUNT, EWatch_GetMode(&watch));
+        hideUnavailable(&layout, EWatch_GetMode(&watch));
 
         Vector2 mouse = GetMousePosition();
         bool menuWasOpen = input.menuOpen;
@@ -196,7 +214,7 @@ int main(void)
 
         if (!menuWasOpen) {
             int key = keyboardButton();
-            if (key >= 0) {
+            if (key >= 0 && Gui_ButtonAvailable((enum GuiButton)key, EWatch_GetMode(&watch))) {
                 pressButton(&watch, (enum GuiButton)key, &input);
                 keyFlash[key] = KEY_FLASH_SECONDS;
             }
@@ -212,7 +230,8 @@ int main(void)
 
         /* A theme switch may change the layout; recompute it for drawing. */
         theme = THEMES[input.currentTheme];
-        theme->layout(&layout, THEME_COUNT);
+        theme->layout(&layout, THEME_COUNT, EWatch_GetMode(&watch));
+        hideUnavailable(&layout, EWatch_GetMode(&watch));
         WatchView view = makeView(&watch, elapsed);
 
         BeginDrawing();

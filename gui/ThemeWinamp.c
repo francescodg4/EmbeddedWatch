@@ -24,8 +24,9 @@ static const Rectangle EQ = { 14.0f, 424.0f, 412.0f, 170.0f };
 
 static const enum GuiButton DECK[6] = { GB_MINUS, GB_CLOCK, GB_ALARM, GB_STOPWATCH, GB_TIMESET, GB_PLUS };
 
-static void layout(GuiLayout* out, int themeCount)
+static void layout(GuiLayout* out, int themeCount, enum EWatchMode mode)
 {
+    (void)mode;
     for (int i = 0; i < 6; i++) {
         out->buttons[DECK[i]] = (Rectangle) { 24.0f + 68.0f * i, 294.0f, 56.0f, 56.0f };
     }

@@ -55,8 +55,9 @@ static Rectangle displayRect(void)
     return (Rectangle) { MARGIN, 76.0f, GUI_SCREEN_WIDTH - 2.0f * MARGIN, 230.0f };
 }
 
-static void layout(GuiLayout* out, int themeCount)
+static void layout(GuiLayout* out, int themeCount, enum EWatchMode mode)
 {
+    (void)mode;
     float cellW = (GUI_SCREEN_WIDTH - 2.0f * MARGIN - GAP) / 2.0f;
     float cellH = 86.0f;
     float gridY = 322.0f;

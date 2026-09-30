@@ -60,8 +60,9 @@ static Rectangle canvasMenuItem(int index, int count)
     return (Rectangle) { 88, top + 8.0f + 18.0f * index, 116, 18 };
 }
 
-static void layout(GuiLayout* out, int themeCount)
+static void layout(GuiLayout* out, int themeCount, enum EWatchMode mode)
 {
+    (void)mode;
     for (int i = 0; i < GB_COUNT; i++) {
         out->buttons[i] = Gui_Scale(canvasButton((enum GuiButton)i), PIXEL_SCALE);
     }

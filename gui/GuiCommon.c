@@ -108,6 +108,11 @@ const char* Gui_ButtonLabel(enum GuiButton button, const WatchView* view)
     }
 }
 
+bool Gui_ButtonAvailable(enum GuiButton button, enum EWatchMode mode)
+{
+    return !(mode == CLOCK_MODE && (button == GB_PLUS || button == GB_MINUS));
+}
+
 const char* Gui_ModeName(enum EWatchMode mode)
 {
     switch (mode) {
@@ -151,7 +156,7 @@ const char* Gui_Hint(const WatchView* view)
         }
         return "SET ALARM: hrs, mins, arm";
     case STOPWATCH_MODE:
-        return "+ start / stop    - reset";
+        return "Play / pause    Reset";
     case TIMESET_MODE:
         return "SET TIME: hrs/mins  +/- adjust";
     default:
@@ -161,7 +166,8 @@ const char* Gui_Hint(const WatchView* view)
 
 bool Gui_BlinkOff(const WatchView* view, bool hoursField)
 {
-    if (view->mode != TIMESET_MODE || view->editingHours != hoursField) {
+    bool editing = view->mode == TIMESET_MODE || (view->mode == ALARM_MODE && view->alarmEditing);
+    if (!editing || view->editingHours != hoursField) {
         return false;
     }
     return fmodf(view->time, 1.0f) > 0.6f;
@@ -238,6 +244,63 @@ void Gui_SegmentDigit(Rectangle r, float t, int digit, Color on, Color off, bool
         } else {
             DrawRectangleRec(s, c);
         }
+    }
+}
+
+/* raylib only fills counter-clockwise triangles; accept either winding. */
+static void fillTriangle(Vector2 a, Vector2 b, Vector2 c, Color color)
+{
+    float cross = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+    if (cross < 0.0f) {
+        DrawTriangle(a, b, c, color);
+    } else {
+        DrawTriangle(a, c, b, color);
+    }
+}
+
+static void iconReset(Vector2 c, float size, float t, Color color)
+{
+    /* Arc drawn clockwise from just right of the top, round to the upper left;
+       the arrowhead at its start points back (counter-clockwise) into the gap. */
+    const float startDeg = 285.0f;
+    const float endDeg = 205.0f + 360.0f;
+    float ring = t * 0.75f;
+    DrawRing(c, size - ring, size, startDeg, endDeg, 36, color);
+
+    float a = startDeg * DEG2RAD;
+    float mid = size - ring / 2.0f;
+    Vector2 p = { c.x + mid * cosf(a), c.y + mid * sinf(a) };
+    Vector2 radial = { cosf(a), sinf(a) };
+    Vector2 back = { sinf(a), -cosf(a) };
+    float w = t * 1.2f;
+    float h = t * 1.8f;
+    fillTriangle((Vector2) { p.x + back.x * h, p.y + back.y * h },
+        (Vector2) { p.x + radial.x * w, p.y + radial.y * w },
+        (Vector2) { p.x - radial.x * w, p.y - radial.y * w },
+        color);
+}
+
+void Gui_AdjustIcon(enum GuiButton button, const WatchView* view, Vector2 c, float size, float t, Color color)
+{
+    if (view->mode == STOPWATCH_MODE) {
+        if (button == GB_MINUS) {
+            iconReset(c, size, t, color);
+        } else if (view->stopwatchRunning) {
+            float bar = size * 0.6f;
+            DrawRectangleRec((Rectangle) { c.x - size * 0.75f, c.y - size, bar, 2.0f * size }, color);
+            DrawRectangleRec((Rectangle) { c.x + size * 0.75f - bar, c.y - size, bar, 2.0f * size }, color);
+        } else {
+            fillTriangle((Vector2) { c.x - size * 0.7f, c.y - size },
+                (Vector2) { c.x - size * 0.7f, c.y + size },
+                (Vector2) { c.x + size, c.y },
+                color);
+        }
+        return;
+    }
+
+    DrawRectangleRec((Rectangle) { c.x - size, c.y - t / 2.0f, 2.0f * size, t }, color);
+    if (button == GB_PLUS) {
+        DrawRectangleRec((Rectangle) { c.x - t / 2.0f, c.y - size, t, 2.0f * size }, color);
     }
 }
 
