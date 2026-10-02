@@ -30,25 +30,25 @@ static bool canvasLoaded = false;
 /* Canvas-space rectangles; the layout reports them scaled to the screen. */
 static const Rectangle BANNER = { 8, 8, 204, 32 };
 static const Rectangle BOX = { 8, 48, 204, 104 };
-static const Rectangle HINT = { 8, 256, 204, 24 };
+static const Rectangle HINT = { 8, 266, 204, 20 };
 
 static Rectangle canvasButton(enum GuiButton button)
 {
     switch (button) {
     case GB_CLOCK:
-        return (Rectangle) { 8, 160, 104, 20 };
+        return (Rectangle) { 8, 160, 100, 24 };
     case GB_ALARM:
-        return (Rectangle) { 8, 184, 104, 20 };
+        return (Rectangle) { 112, 160, 100, 24 };
     case GB_STOPWATCH:
-        return (Rectangle) { 8, 208, 104, 20 };
+        return (Rectangle) { 8, 190, 100, 24 };
     case GB_TIMESET:
-        return (Rectangle) { 8, 232, 104, 20 };
+        return (Rectangle) { 112, 190, 100, 24 };
     case GB_PLUS:
-        return (Rectangle) { 128, 160, 40, 40 };
+        return (Rectangle) { 8, 224, 100, 32 };
     case GB_MINUS:
-        return (Rectangle) { 172, 160, 40, 40 };
+        return (Rectangle) { 112, 224, 100, 32 };
     case GB_THEME:
-        return (Rectangle) { 120, 288, 92, 24 };
+        return (Rectangle) { 56, 294, 108, 20 };
     default:
         return (Rectangle) { 0 };
     }
@@ -56,8 +56,8 @@ static Rectangle canvasButton(enum GuiButton button)
 
 static Rectangle canvasMenuItem(int index, int count)
 {
-    float top = 288.0f - 8.0f - 18.0f * count - 8.0f;
-    return (Rectangle) { 88, top + 8.0f + 18.0f * index, 116, 18 };
+    float top = 294.0f - 8.0f - 18.0f * count - 8.0f;
+    return (Rectangle) { 68, top + 8.0f + 18.0f * index, 116, 18 };
 }
 
 static void layout(GuiLayout* out, int themeCount, enum EWatchMode mode)
@@ -127,6 +127,26 @@ static void tiledPattern(Rectangle r, Color base, Color dot, int kind)
     }
 }
 
+static float clamp01(float v)
+{
+    return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+}
+
+/* Height of a body on a 24h arc peaking at `noon`: 1 at the top, 0 on the horizon. */
+static float elevation(float hour, float noon)
+{
+    return cosf((hour - noon) * PI / 12.0f);
+}
+
+/* Position on the arc across the right of the banner, rising left and setting right. */
+static Vector2 arcPosition(Rectangle sky, float hour, float noon, float horizonY)
+{
+    float t = fmodf(hour - (noon - 6.0f) + 24.0f, 24.0f) / 12.0f;
+    float x = sky.x + 96.0f + t * (sky.width - 106.0f);
+    float y = horizonY - elevation(hour, noon) * (horizonY - sky.y - 6.0f);
+    return (Vector2) { floorf(x), floorf(y) };
+}
+
 static void drawBanner(const WatchView* view)
 {
     Rectangle b = BANNER;
@@ -134,42 +154,50 @@ static void drawBanner(const WatchView* view)
     Rectangle inner = Gui_Inset(b, 2.0f);
     BeginScissorMode((int)inner.x, (int)inner.y, (int)inner.width, (int)inner.height);
 
-    /* Landscape thumbnail that changes with the mode */
-    Color sky = LCD_BLUE, hill = KBD_GREEN, hillFar = PRIMARY;
-    switch (view->mode) {
-    case ALARM_MODE:
-        sky = (Color) { 248, 184, 104, 255 };
-        hill = (Color) { 200, 104, 72, 255 };
-        hillFar = (Color) { 152, 72, 64, 255 };
-        break;
-    case STOPWATCH_MODE:
-        sky = (Color) { 176, 216, 248, 255 };
-        hill = (Color) { 232, 232, 248, 255 };
-        hillFar = (Color) { 160, 176, 208, 255 };
-        break;
-    case TIMESET_MODE:
-        sky = (Color) { 72, 64, 120, 255 };
-        hill = (Color) { 104, 88, 152, 255 };
-        hillFar = (Color) { 56, 48, 96, 255 };
-        break;
-    default:
-        break;
+    /* Static landscape lit for the clock's time of day. */
+    float hour = view->clockHours + view->clockMinutes / 60.0f;
+    float sun = elevation(hour, 12.0f);
+    float daylight = clamp01((sun + 0.3f) / 0.6f);
+    float twilight = clamp01(1.0f - fabsf(sun) / 0.45f);
+
+    const Color night = { 32, 40, 88, 255 };
+    const Color day = { 144, 200, 232, 255 };
+    const Color dusk = { 240, 152, 96, 255 };
+    Color skyTop = ColorLerp(night, day, daylight);
+    Color skyBottom = ColorLerp(skyTop, dusk, twilight * 0.8f);
+    DrawRectangleGradientV((int)inner.x, (int)inner.y, (int)inner.width, (int)inner.height, skyTop, skyBottom);
+
+    /* Stars fade in after sunset */
+    static const unsigned char STARS[][2] = { { 104, 3 }, { 120, 9 }, { 137, 4 }, { 151, 12 }, { 166, 6 }, { 182, 3 }, { 194, 10 }, { 112, 15 }, { 175, 14 } };
+    float starAlpha = 1.0f - clamp01(daylight * 2.0f);
+    for (size_t i = 0; starAlpha > 0.0f && i < sizeof(STARS) / sizeof(STARS[0]); i++) {
+        DrawRectangle((int)inner.x + STARS[i][0], (int)inner.y + STARS[i][1], 1, 1, Fade(CREAM, starAlpha));
     }
-    DrawRectangleRec(inner, sky);
-    DrawRectangle((int)inner.x, (int)inner.y + 8, (int)inner.width, 2, Fade(WHITE, 0.3f));
+
+    float horizonY = inner.y + inner.height - 4.0f;
+    if (sun > -0.1f) {
+        Vector2 p = arcPosition(inner, hour, 12.0f, horizonY);
+        Color sunColor = ColorLerp(CREAM, (Color) { 248, 184, 88, 255 }, twilight);
+        DrawCircle((int)p.x, (int)p.y, 4.0f, sunColor);
+    }
+    if (elevation(hour, 0.0f) > -0.1f) {
+        Vector2 p = arcPosition(inner, hour, 0.0f, horizonY);
+        DrawCircle((int)p.x, (int)p.y, 3.0f, CREAM);
+        DrawCircle((int)p.x + 2, (int)p.y - 1, 3.0f, skyTop);
+    }
+
+    const Color shade = { 24, 32, 64, 255 };
+    Color hill = ColorLerp(KBD_GREEN, shade, (1.0f - daylight) * 0.6f);
+    Color hillFar = ColorLerp(PRIMARY, shade, (1.0f - daylight) * 0.6f);
     for (int x = 0; x < (int)inner.width; x++) {
         int far = (int)(6 + 4 * sinf(x * 0.09f + 1.0f));
         int near = (int)(3 + 3 * sinf(x * 0.05f + 3.0f));
         DrawRectangle((int)inner.x + x, (int)(inner.y + inner.height) - far - 6, 1, far + 6, hillFar);
         DrawRectangle((int)inner.x + x, (int)(inner.y + inner.height) - near - 2, 1, near + 2, hill);
     }
-    int sunX = (int)(inner.x + 170 + 4 * sinf(view->time * 0.5f));
-    DrawRectangle(sunX, (int)inner.y + 5, 8, 8, CREAM);
-    DrawRectangle(sunX - 1, (int)inner.y + 6, 10, 6, CREAM);
     EndScissorMode();
 
-    char title[32];
-    snprintf(title, sizeof(title), "BOX: %s", Gui_ModeName(view->mode));
+    const char* title = Gui_ModeName(view->mode);
     float w = pixelTextWidth(title, 1) + 12.0f;
     Rectangle tag = { b.x + 8.0f, b.y + 8.0f, floorf(w), 16.0f };
     pixelBox(tag, BORDER, CREAM, WHITE);
@@ -265,83 +293,6 @@ static bool modeActive(enum GuiButton button, const WatchView* view)
         || (button == GB_TIMESET && view->mode == TIMESET_MODE);
 }
 
-/* Party slot: stacked teal container with a tiny pixel badge. */
-static void drawSlot(enum GuiButton button, const WatchView* view, const GuiInput* input)
-{
-    Rectangle r = canvasButton(button);
-    bool active = modeActive(button, view);
-    bool pressed = input->pressed[button];
-    if (pressed) {
-        r.y += 1.0f;
-    } else {
-        DrawRectangle((int)r.x + 1, (int)r.y + 2, (int)r.width, (int)r.height, DARK);
-    }
-    Color fill = active ? (Color) { 88, 192, 168, 255 } : PRIMARY;
-    if (input->hovered[button] && !active) {
-        fill = (Color) { 72, 176, 152, 255 };
-    }
-    pixelBox(r, BORDER, fill, active ? CREAM : (Color) { 96, 184, 168, 255 });
-
-    /* badge ball */
-    Rectangle ball = { r.x + 5.0f, r.y + 5.0f, 10.0f, 10.0f };
-    pixelBox(ball, BORDER, active ? (Color) { 232, 72, 72, 255 } : METAL, active ? (Color) { 248, 136, 136, 255 } : WHITE);
-    DrawRectangle((int)ball.x + 1, (int)ball.y + 5, 8, 1, BORDER);
-    DrawRectangle((int)ball.x + 4, (int)ball.y + 4, 2, 2, WHITE);
-
-    shadowText(Gui_ButtonLabel(button, view), r.x + 20.0f, r.y + 7.0f, 1, CREAM, DARK);
-}
-
-/* Keyboard-matrix key with inner highlight and hard pixel shadow. */
-static void drawKey(Rectangle r, const char* glyph, Color color, bool hovered, bool pressed, const char* caption)
-{
-    if (pressed) {
-        r.x += 1.0f;
-        r.y += 2.0f;
-    } else {
-        DrawRectangle((int)r.x + 1, (int)r.y + 2, (int)r.width, (int)r.height, SHADOW);
-    }
-    Color face = hovered ? ColorBrightness(color, 0.15f) : color;
-    pixelBox(r, BORDER, face, pressed ? face : ColorBrightness(color, 0.45f));
-    DrawRectangle((int)r.x + 2, (int)(r.y + r.height) - 4, (int)r.width - 4, 2, ColorBrightness(color, -0.25f));
-    centeredShadowText(glyph, (Rectangle) { r.x, r.y - 4.0f, r.width, r.height }, 3, WHITE, BORDER);
-    centeredShadowText(caption, (Rectangle) { r.x, r.y + r.height - 14.0f, r.width, 10.0f }, 1, WHITE, BORDER);
-}
-
-static void drawKeys(const WatchView* view, const GuiInput* input)
-{
-    const char* plusCaption = view->mode == STOPWATCH_MODE ? (view->stopwatchRunning ? "STOP" : "GO") : "UP";
-    const char* minusCaption = view->mode == STOPWATCH_MODE ? "RST" : "DOWN";
-    drawKey(canvasButton(GB_PLUS), "+", KBD_BLUE, input->hovered[GB_PLUS], input->pressed[GB_PLUS], plusCaption);
-    drawKey(canvasButton(GB_MINUS), "-", KBD_ORANGE, input->hovered[GB_MINUS], input->pressed[GB_MINUS], minusCaption);
-
-    /* Decorative 3x3 matrix beneath, in the three keyboard colours */
-    static const char* const glyphs = "HMS";
-    Color colors[3] = { KBD_BLUE, KBD_ORANGE, KBD_GREEN };
-    for (int row = 0; row < 3; row++) {
-        for (int col = 0; col < 3; col++) {
-            Rectangle k = { 128.0f + col * 29.0f, 208.0f + row * 14.0f, 26.0f, 12.0f };
-            bool lit = (row == 0 && col == 0 && view->mode == TIMESET_MODE && view->editingHours)
-                || (row == 0 && col == 1 && view->mode == TIMESET_MODE && !view->editingHours)
-                || (row == 0 && col == 2 && (view->mode == CLOCK_MODE || view->mode == STOPWATCH_MODE));
-            Color c = colors[(row + col) % 3];
-            pixelBox(k, BORDER, lit ? WHITE : c, lit ? WHITE : ColorBrightness(c, 0.4f));
-            char g[2] = { row == 0 ? glyphs[col] : (char)('1' + row * 3 + col - 3), '\0' };
-            centeredShadowText(g, k, 1, lit ? BORDER : WHITE, lit ? CREAM : BORDER);
-        }
-    }
-}
-
-static void drawHint(const WatchView* view)
-{
-    /* Cream lined-paper text box with double-line border */
-    pixelBox(HINT, BORDER, CREAM, CREAM);
-    DrawRectangleLinesEx(Gui_Inset(HINT, 3.0f), 1.0f, PRIMARY);
-    for (int y = (int)HINT.y + 7; y < (int)(HINT.y + HINT.height) - 4; y += 4) {
-        DrawRectangle((int)HINT.x + 5, y, (int)HINT.width - 10, 1, (Color) { 232, 232, 200, 255 });
-    }
-    centeredShadowText(Gui_Hint(view), HINT, 1, BORDER, SHADOW);
-}
-
 static const char* const HAND[9] = {
     ".XXXX........",
     "XWWWWXXXXXXX.",
@@ -370,6 +321,75 @@ static void drawHand(float x, float y, bool mirror)
     }
 }
 
+/* Party slot: teal container with a tiny pixel badge. */
+static void drawSlot(enum GuiButton button, const WatchView* view, const GuiInput* input)
+{
+    Rectangle r = canvasButton(button);
+    bool active = modeActive(button, view);
+    bool pressed = input->pressed[button];
+    if (pressed) {
+        r.y += 1.0f;
+    } else {
+        DrawRectangle((int)r.x + 1, (int)r.y + 2, (int)r.width, (int)r.height, DARK);
+    }
+    Color fill = active ? (Color) { 88, 192, 168, 255 } : PRIMARY;
+    if (input->hovered[button] && !active) {
+        fill = (Color) { 72, 176, 152, 255 };
+    }
+    pixelBox(r, BORDER, fill, active ? CREAM : (Color) { 96, 184, 168, 255 });
+
+    if (active) {
+        /* pointing hand takes the badge's place on the active slot */
+        float bob = (fmodf(view->time, 0.6f) < 0.3f) ? 0.0f : 1.0f;
+        drawHand(r.x + 3.0f + bob, r.y + 7.0f, false);
+    } else {
+        Rectangle ball = { r.x + 5.0f, r.y + 7.0f, 10.0f, 10.0f };
+        pixelBox(ball, BORDER, METAL, WHITE);
+        DrawRectangle((int)ball.x + 1, (int)ball.y + 5, 8, 1, BORDER);
+        DrawRectangle((int)ball.x + 4, (int)ball.y + 4, 2, 2, WHITE);
+    }
+
+    shadowText(Gui_ButtonLabel(button, view), r.x + 20.0f, r.y + 9.0f, 1, CREAM, DARK);
+}
+
+/* Keyboard-matrix key with inner highlight and hard pixel shadow. */
+static void drawKey(enum GuiButton button, const WatchView* view, Color color, bool hovered, bool pressed, const char* caption)
+{
+    Rectangle r = canvasButton(button);
+    if (pressed) {
+        r.x += 1.0f;
+        r.y += 2.0f;
+    } else {
+        DrawRectangle((int)r.x + 1, (int)r.y + 2, (int)r.width, (int)r.height, SHADOW);
+    }
+    Color face = hovered ? ColorBrightness(color, 0.15f) : color;
+    pixelBox(r, BORDER, face, pressed ? face : ColorBrightness(color, 0.45f));
+    DrawRectangle((int)r.x + 2, (int)(r.y + r.height) - 4, (int)r.width - 4, 2, ColorBrightness(color, -0.25f));
+    Vector2 c = { r.x + 20.0f, floorf(r.y + r.height / 2.0f) - 1.0f };
+    Gui_AdjustIcon(button, view, (Vector2) { c.x + 1.0f, c.y + 1.0f }, 7.0f, 3.0f, BORDER);
+    Gui_AdjustIcon(button, view, c, 7.0f, 3.0f, WHITE);
+    centeredShadowText(caption, (Rectangle) { r.x + 32.0f, r.y - 1.0f, r.width - 40.0f, r.height }, 1, WHITE, BORDER);
+}
+
+static void drawKeys(const WatchView* view, const GuiInput* input)
+{
+    const char* plusCaption = view->mode == STOPWATCH_MODE ? (view->stopwatchRunning ? "STOP" : "START") : "UP";
+    const char* minusCaption = view->mode == STOPWATCH_MODE ? "RESET" : "DOWN";
+    drawKey(GB_PLUS, view, KBD_BLUE, input->hovered[GB_PLUS], input->pressed[GB_PLUS], plusCaption);
+    drawKey(GB_MINUS, view, KBD_ORANGE, input->hovered[GB_MINUS], input->pressed[GB_MINUS], minusCaption);
+}
+
+static void drawHint(const WatchView* view)
+{
+    /* Cream lined-paper text box with double-line border */
+    pixelBox(HINT, BORDER, CREAM, CREAM);
+    DrawRectangleLinesEx(Gui_Inset(HINT, 3.0f), 1.0f, PRIMARY);
+    for (int y = (int)HINT.y + 7; y < (int)(HINT.y + HINT.height) - 4; y += 4) {
+        DrawRectangle((int)HINT.x + 5, y, (int)HINT.width - 10, 1, (Color) { 232, 232, 200, 255 });
+    }
+    centeredShadowText(Gui_Hint(view), HINT, 1, BORDER, SHADOW);
+}
+
 static void drawThemeButton(const WatchView* view, const GuiInput* input)
 {
     Rectangle r = canvasButton(GB_THEME);
@@ -377,21 +397,13 @@ static void drawThemeButton(const WatchView* view, const GuiInput* input)
     if (pressed) {
         r.y += 1.0f;
     } else {
-        DrawRectangle((int)r.x + 1, (int)r.y + 2, (int)r.width, (int)r.height, SHADOW);
+        DrawRectangleRounded((Rectangle) { r.x + 1.0f, r.y + 2.0f, r.width, r.height }, 1.0f, 8, SHADOW);
     }
     Color face = input->hovered[GB_THEME] ? (Color) { 120, 120, 136, 255 } : METAL_DARK;
     DrawRectangleRounded(r, 1.0f, 8, BORDER);
     DrawRectangleRounded(Gui_Inset(r, 1.0f), 1.0f, 8, face);
     DrawRectangle((int)r.x + 8, (int)r.y + 3, (int)r.width - 16, 1, Fade(WHITE, pressed ? 0.2f : 0.6f));
     centeredShadowText(Gui_ButtonLabel(GB_THEME, view), r, 1, WHITE, BORDER);
-
-    /* Decorative B BUTTON capsule on the left */
-    Rectangle b = { 8, 288, 64, 24 };
-    DrawRectangle((int)b.x + 1, (int)b.y + 2, (int)b.width, (int)b.height, SHADOW);
-    DrawRectangleRounded(b, 1.0f, 8, BORDER);
-    DrawRectangleRounded(Gui_Inset(b, 1.0f), 1.0f, 8, METAL_DARK);
-    DrawRectangle((int)b.x + 8, (int)b.y + 3, (int)b.width - 16, 1, Fade(WHITE, 0.6f));
-    centeredShadowText("EWATCH", b, 1, WHITE, BORDER);
 }
 
 static void drawMenu(const GuiInput* input, float time)
@@ -436,20 +448,11 @@ static void draw(const WatchView* view, const GuiLayout* layout, const GuiInput*
     for (int b = GB_CLOCK; b <= GB_TIMESET; b++) {
         drawSlot((enum GuiButton)b, view, input);
     }
-    drawKeys(view, input);
+    if (Gui_ButtonAvailable(GB_PLUS, view->mode)) {
+        drawKeys(view, input);
+    }
     drawHint(view);
     drawThemeButton(view, input);
-
-    /* Pointing hand beside the active party slot */
-    enum GuiButton active = GB_CLOCK;
-    for (int b = GB_CLOCK; b <= GB_TIMESET; b++) {
-        if (modeActive((enum GuiButton)b, view)) {
-            active = (enum GuiButton)b;
-        }
-    }
-    Rectangle slot = canvasButton(active);
-    float bob = (fmodf(view->time, 0.6f) < 0.3f) ? 0.0f : 1.0f;
-    drawHand(slot.x + slot.width + 1.0f + bob, slot.y + 6.0f, true);
 
     if (input->menuOpen) {
         drawMenu(input, view->time);
