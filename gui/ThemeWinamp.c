@@ -1,8 +1,8 @@
 /*
  * Winamp theme: Winamp 5 Modern / Frutiger Aero (skills/WINAMP.Graphics.md).
- * Brushed-metal frame, navy title bar, cobalt LCD telemetry with a
- * seven-segment clock, spectrum analyzer and marquee, bevelled transport
- * deck and a decorative equalizer module.
+ * Brushed-metal frame, navy title bar and a cobalt LCD with a
+ * seven-segment clock, reduced to the controls the watch needs:
+ * one bevelled button per mode, separate + / - keys and the theme picker.
  */
 #include "Gui.h"
 
@@ -18,24 +18,37 @@ static const Color LCD_BG = { 9, 26, 56, 255 };
 static const Color LCD_GLOW = { 112, 176, 255, 255 };
 static const Color INK = { 24, 32, 48, 255 };
 
-static const Rectangle LCD = { 14.0f, 58.0f, 412.0f, 196.0f };
-static const Rectangle SEEK = { 20.0f, 266.0f, 400.0f, 10.0f };
-static const Rectangle EQ = { 14.0f, 424.0f, 412.0f, 170.0f };
+static const Rectangle LCD = { 14.0f, 44.0f, 412.0f, 268.0f };
 
-static const enum GuiButton DECK[6] = { GB_MINUS, GB_CLOCK, GB_ALARM, GB_STOPWATCH, GB_TIMESET, GB_PLUS };
+static const enum GuiButton MODES[4] = { GB_CLOCK, GB_ALARM, GB_STOPWATCH, GB_TIMESET };
 
 static void layout(GuiLayout* out, int themeCount, enum EWatchMode mode)
 {
-    (void)mode;
-    for (int i = 0; i < 6; i++) {
-        out->buttons[DECK[i]] = (Rectangle) { 24.0f + 68.0f * i, 294.0f, 56.0f, 56.0f };
+    for (int i = 0; i < 4; i++) {
+        out->buttons[MODES[i]] = (Rectangle) { 30.0f + 100.0f * i, 340.0f, 80.0f, 80.0f };
     }
 
-    out->buttons[GB_THEME] = (Rectangle) { 292.0f, 604.0f, 134.0f, 26.0f };
+    if (mode == STOPWATCH_MODE) {
+        /* round transport buttons: play/pause, then reset */
+        out->buttons[GB_PLUS] = (Rectangle) { 130.0f, 462.0f, 76.0f, 76.0f };
+        out->buttons[GB_MINUS] = (Rectangle) { 234.0f, 462.0f, 76.0f, 76.0f };
+    } else {
+        out->buttons[GB_PLUS] = (Rectangle) { 14.0f, 470.0f, 200.0f, 72.0f };
+        out->buttons[GB_MINUS] = (Rectangle) { 226.0f, 470.0f, 200.0f, 72.0f };
+    }
+    out->buttons[GB_THEME] = (Rectangle) { 130.0f, 584.0f, 180.0f, 32.0f };
 
     for (int i = 0; i < themeCount && i < GUI_MAX_THEMES; i++) {
-        out->menuItems[i] = (Rectangle) { 250.0f, 604.0f - 6.0f - 26.0f * (themeCount - i), 176.0f, 26.0f };
+        out->menuItems[i] = (Rectangle) { 130.0f, 584.0f - 6.0f - 26.0f * (themeCount - i), 180.0f, 26.0f };
     }
+}
+
+static bool modeActive(enum GuiButton button, const WatchView* view)
+{
+    return (button == GB_CLOCK && view->mode == CLOCK_MODE)
+        || (button == GB_ALARM && view->mode == ALARM_MODE)
+        || (button == GB_STOPWATCH && view->mode == STOPWATCH_MODE)
+        || (button == GB_TIMESET && view->mode == TIMESET_MODE);
 }
 
 static void bevel(Rectangle r, bool sunken)
@@ -53,9 +66,9 @@ static void insetPanel(Rectangle r, Color fill)
     DrawRectangleRec(r, fill);
     /* inset 2px 2px 4px shadow */
     for (int i = 0; i < 4; i++) {
-        float a = 0.6f * (4 - i) / 4.0f;
-        DrawRectangleRec((Rectangle) { r.x, r.y + i, r.width, 1.0f }, Fade(BLACK, a * 0.6f));
-        DrawRectangleRec((Rectangle) { r.x + i, r.y, 1.0f, r.height }, Fade(BLACK, a * 0.6f));
+        float a = 0.36f * (4 - i) / 4.0f;
+        DrawRectangleRec((Rectangle) { r.x, r.y + i, r.width, 1.0f }, Fade(BLACK, a));
+        DrawRectangleRec((Rectangle) { r.x + i, r.y, 1.0f, r.height }, Fade(BLACK, a));
     }
     bevel(Gui_Inset(r, -1.0f), true);
 }
@@ -74,33 +87,17 @@ static void drawFrame(void)
 static void drawTitleBar(void)
 {
     const GuiFonts* fonts = Gui_Fonts();
-    Rectangle bar = { 6.0f, 6.0f, GUI_SCREEN_WIDTH - 12.0f, 24.0f };
+    Rectangle bar = { 6.0f, 6.0f, GUI_SCREEN_WIDTH - 12.0f, 26.0f };
     DrawRectangleGradientV((int)bar.x, (int)bar.y, (int)bar.width, (int)bar.height, TITLE_TOP, TITLE_BOTTOM);
     DrawRectangle((int)bar.x, (int)bar.y, (int)bar.width, 1, Fade(WHITE, 0.4f));
 
     /* reflection ridges either side of the brand */
     for (int i = 0; i < 4; i++) {
-        float y = bar.y + 7.0f + 3.0f * i;
+        float y = bar.y + 8.0f + 3.0f * i;
         DrawLineEx((Vector2) { bar.x + 10.0f, y }, (Vector2) { 160.0f, y }, 1.0f, Fade(LCD_GLOW, 0.35f));
-        DrawLineEx((Vector2) { 280.0f, y }, (Vector2) { 360.0f, y }, 1.0f, Fade(LCD_GLOW, 0.35f));
+        DrawLineEx((Vector2) { 280.0f, y }, (Vector2) { bar.x + bar.width - 10.0f, y }, 1.0f, Fade(LCD_GLOW, 0.35f));
     }
     Gui_TextCentered(fonts->uiBold, "EWATCH", (Rectangle) { 160.0f, bar.y, 120.0f, bar.height }, 17.0f, 3.0f, WHITE);
-
-    /* window controls */
-    const char* glyphs[3] = { "_", "=", "x" };
-    for (int i = 0; i < 3; i++) {
-        Rectangle b = { 366.0f + 20.0f * i, bar.y + 5.0f, 16.0f, 14.0f };
-        DrawRectangleGradientV((int)b.x, (int)b.y, (int)b.width, (int)b.height, FRAME_TOP, FRAME_BOTTOM);
-        bevel(b, false);
-        Gui_TextCentered(fonts->uiSmall, glyphs[i], b, 14.0f, 0.0f, INK);
-    }
-
-    const char* menus[5] = { "File", "Mode", "Options", "View", "Help" };
-    float x = 14.0f;
-    for (int i = 0; i < 5; i++) {
-        Gui_TextLeft(fonts->uiSmall, menus[i], (Vector2) { x, 36.0f }, 14.0f, 0.0f, INK);
-        x += MeasureTextEx(fonts->uiSmall, menus[i], 14.0f, 0.0f).x + 16.0f;
-    }
 }
 
 static void lcdDigit(Rectangle r, float t, int digit, bool dim)
@@ -112,22 +109,15 @@ static void lcdDigit(Rectangle r, float t, int digit, bool dim)
     Gui_SegmentDigit(r, t, digit, on, Fade(LCD_GLOW, 0.07f), false);
 }
 
-static void badge(float x, float y, const char* text, bool lit)
+static float badge(float x, float y, const char* text, bool lit)
 {
     const GuiFonts* fonts = Gui_Fonts();
     Vector2 size = MeasureTextEx(fonts->uiSmall, text, 14.0f, 0.0f);
-    Rectangle r = { x, y, size.x + 10.0f, 16.0f };
+    Rectangle r = { x, y, size.x + 14.0f, 18.0f };
     DrawRectangleRec(r, lit ? Fade(LCD_GLOW, 0.22f) : Fade(LCD_GLOW, 0.05f));
     DrawRectangleLinesEx(r, 1.0f, Fade(LCD_GLOW, lit ? 0.8f : 0.2f));
     Gui_TextCentered(fonts->uiSmall, text, r, 14.0f, 0.0f, lit ? LCD_GLOW : Fade(LCD_GLOW, 0.3f));
-}
-
-static float bandLevel(const WatchView* view, int band, float speed)
-{
-    float t = view->time * speed;
-    float v = 0.5f + 0.25f * sinf(t * (1.3f + 0.21f * band) + band * 1.7f) + 0.2f * sinf(t * (3.1f + 0.37f * band) + band);
-    v *= 1.0f - band * 0.025f;
-    return v < 0.05f ? 0.05f : (v > 1.0f ? 1.0f : v);
+    return r.width;
 }
 
 static void drawLcd(const WatchView* view)
@@ -135,68 +125,52 @@ static void drawLcd(const WatchView* view)
     const GuiFonts* fonts = Gui_Fonts();
     insetPanel(LCD, LCD_BG);
 
-    /* Time: HH:MM:SS in seven-segment */
-    float dw = 30.0f, dh = 56.0f, t = 6.0f;
-    float x = 28.0f, y = 72.0f;
+    /* Header: current mode and alarm status */
+    char alarmText[32];
+    snprintf(alarmText, sizeof(alarmText), "ALARM %02d:%02d %s", view->alarmHours, view->alarmMinutes, Gui_AlarmStateName(view->alarmState));
+    Gui_TextLeft(fonts->uiSmall, "MODE", (Vector2) { LCD.x + 16.0f, LCD.y + 16.0f }, 14.0f, 0.0f, Fade(LCD_GLOW, 0.55f));
+    Gui_TextLeft(fonts->uiSmall, Gui_ModeName(view->mode), (Vector2) { LCD.x + 58.0f, LCD.y + 16.0f }, 14.0f, 0.0f, LCD_GLOW);
+    bool ringing = view->alarmState == ALARM_EXPIRED && fmodf(view->time, 0.5f) < 0.25f;
+    Color alarmColor = view->alarmState == ALARM_OFF ? Fade(LCD_GLOW, 0.55f) : LCD_GLOW;
+    if (view->alarmState == ALARM_EXPIRED) {
+        alarmColor = ringing ? WHITE : Fade(LCD_GLOW, 0.4f);
+    }
+    float alarmW = MeasureTextEx(fonts->uiSmall, alarmText, 14.0f, 0.0f).x;
+    Gui_TextLeft(fonts->uiSmall, alarmText, (Vector2) { LCD.x + LCD.width - 16.0f - alarmW, LCD.y + 16.0f }, 14.0f, 0.0f, alarmColor);
+
+    /* Time: HH:MM:SS in seven-segment, tenths on the side */
+    float dw = 40.0f, dh = 84.0f, t = 8.0f, gap = 8.0f, colon = 16.0f;
+    float total = 6.0f * (dw + gap) + 2.0f * (colon + gap) + 20.0f;
+    float x = LCD.x + floorf((LCD.width - total) / 2.0f);
+    float y = LCD.y + 52.0f;
     int digits[6] = { view->hours / 10, view->hours % 10, view->minutes / 10, view->minutes % 10, view->seconds / 10, view->seconds % 10 };
     bool secondsDim = view->mode == ALARM_MODE || view->mode == TIMESET_MODE;
     for (int i = 0; i < 6; i++) {
         bool blank = (i < 2 && Gui_BlinkOff(view, true)) || (i >= 2 && i < 4 && Gui_BlinkOff(view, false));
         lcdDigit((Rectangle) { x, y, dw, dh }, t, blank ? -1 : digits[i], i >= 4 && secondsDim);
-        x += dw + 8.0f;
+        x += dw + gap;
         if (i == 1 || i == 3) {
             bool colonOn = !(view->mode == CLOCK_MODE && view->tenths >= 5);
-            Gui_SegmentColon((Rectangle) { x - 6.0f, y, 12.0f, dh }, 6.0f, colonOn ? LCD_GLOW : Fade(LCD_GLOW, 0.15f));
-            x += 10.0f;
+            Gui_SegmentColon((Rectangle) { x, y, colon, dh }, 8.0f, colonOn ? LCD_GLOW : Fade(LCD_GLOW, 0.15f));
+            x += colon + gap;
         }
     }
-    lcdDigit((Rectangle) { x + 2.0f, y + dh - 26.0f, 14.0f, 26.0f }, 3.0f, view->tenths, view->mode != STOPWATCH_MODE);
+    lcdDigit((Rectangle) { x, y + dh - 36.0f, 20.0f, 36.0f }, 4.0f, view->tenths, view->mode != STOPWATCH_MODE);
 
-    /* Telemetry column */
-    float cx = 318.0f;
-    char alarmText[16];
-    snprintf(alarmText, sizeof(alarmText), "%02d:%02d", view->alarmHours, view->alarmMinutes);
-    Gui_TextLeft(fonts->uiSmall, "ALM", (Vector2) { cx, 70.0f }, 14.0f, 0.0f, Fade(LCD_GLOW, 0.55f));
-    Gui_TextLeft(fonts->uiSmall, alarmText, (Vector2) { cx + 32.0f, 70.0f }, 14.0f, 0.0f, LCD_GLOW);
-    Gui_TextLeft(fonts->uiSmall, "MODE", (Vector2) { cx, 88.0f }, 14.0f, 0.0f, Fade(LCD_GLOW, 0.55f));
-    Gui_TextLeft(fonts->uiSmall, Gui_ModeName(view->mode), (Vector2) { cx + 38.0f, 88.0f }, 14.0f, 0.0f, LCD_GLOW);
+    /* Mode indicators */
+    float by = LCD.y + 168.0f;
+    float bx = LCD.x + 16.0f;
+    bx += badge(bx, by, "CLK", view->mode == CLOCK_MODE) + 6.0f;
+    bx += badge(bx, by, "ALM", view->mode == ALARM_MODE) + 6.0f;
+    bx += badge(bx, by, "STW", view->mode == STOPWATCH_MODE) + 6.0f;
+    bx += badge(bx, by, "SET", view->mode == TIMESET_MODE) + 18.0f;
+    bx += badge(bx, by, "RUN", view->stopwatchRunning) + 6.0f;
+    badge(bx, by, view->alarmState == ALARM_EXPIRED ? "RING" : "ARM", view->alarmState == ALARM_ON || ringing);
 
-    badge(cx, 110.0f, "CLK", view->mode == CLOCK_MODE);
-    badge(cx + 34.0f, 110.0f, "ALM", view->mode == ALARM_MODE);
-    badge(cx + 68.0f, 110.0f, "STW", view->mode == STOPWATCH_MODE);
-    badge(cx, 130.0f, "SET", view->mode == TIMESET_MODE);
-    badge(cx + 34.0f, 130.0f, "RUN", view->stopwatchRunning);
-    bool ringing = view->alarmState == ALARM_EXPIRED && fmodf(view->time, 0.5f) < 0.25f;
-    badge(cx + 68.0f, 130.0f, view->alarmState == ALARM_EXPIRED ? "RING" : "ARM", view->alarmState == ALARM_ON || ringing);
-
-    /* Spectrum analyzer */
-    float speed = view->stopwatchRunning ? 3.0f : 1.0f;
-    float bx = 28.0f, by = 196.0f, barW = 10.0f;
-    for (int b = 0; b < 22; b++) {
-        float level = bandLevel(view, b, speed);
-        if (view->alarmState == ALARM_EXPIRED) {
-            level = fminf(1.0f, level + 0.4f * fabsf(sinf(view->time * 12.0f)));
-        }
-        int cells = (int)(level * 12.0f);
-        for (int c = 0; c < 12; c++) {
-            Color color = c < cells ? ColorLerp(LCD_GLOW, WHITE, c / 24.0f) : Fade(LCD_GLOW, 0.06f);
-            DrawRectangleRec((Rectangle) { bx + b * (barW + 3.0f), by - c * 4.0f, barW, 3.0f }, color);
-        }
-    }
-
-    /* Dot-matrix marquee */
-    Rectangle marquee = { 22.0f, 214.0f, 396.0f, 28.0f };
-    DrawRectangleRec(marquee, Fade(BLACK, 0.35f));
-    char text[160];
-    snprintf(text, sizeof(text), "***  EMBEDDEDWATCH  -  %s MODE  -  ALARM %s %s  -  %s  ", Gui_ModeName(view->mode), alarmText, Gui_AlarmStateName(view->alarmState), Gui_Hint(view));
-    Font dot = GetFontDefault();
-    float width = MeasureTextEx(dot, text, 20.0f, 2.0f).x;
-    float offset = fmodf(view->time * 50.0f, width);
-    BeginScissorMode((int)marquee.x, (int)marquee.y, (int)marquee.width, (int)marquee.height);
-    for (int k = 0; k < 3; k++) {
-        DrawTextEx(dot, text, (Vector2) { floorf(marquee.x + 4.0f - offset + k * width), marquee.y + 4.0f }, 20.0f, 2.0f, LCD_GLOW);
-    }
-    EndScissorMode();
+    /* Static dot-matrix hint line */
+    Rectangle hint = { LCD.x + 10.0f, LCD.y + 204.0f, LCD.width - 20.0f, 40.0f };
+    DrawRectangleRec(hint, Fade(BLACK, 0.35f));
+    Gui_TextCentered(GetFontDefault(), Gui_Hint(view), hint, 20.0f, 2.0f, LCD_GLOW);
 
     /* Scanlines over the whole glass */
     for (float sy = LCD.y; sy < LCD.y + LCD.height; sy += 2.0f) {
@@ -205,190 +179,139 @@ static void drawLcd(const WatchView* view)
     DrawRectangleGradientV((int)LCD.x, (int)LCD.y, (int)LCD.width, 40, Fade(WHITE, 0.07f), Fade(WHITE, 0.0f));
 }
 
-static void capsule(Rectangle r, bool pressed, bool lit)
+static void capsule(Rectangle r, bool pressed, bool hovered)
 {
-    float round = 1.0f;
+    float round = Gui_Roundness(r, 12.0f);
+    DrawRectangleRounded((Rectangle) { r.x + 1.0f, r.y + 2.0f, r.width, r.height }, round, 12, Fade(BLACK, pressed ? 0.1f : 0.3f));
     DrawRectangleRounded(r, round, 12, BEVEL_DARK);
     Rectangle face = Gui_Inset(r, 1.0f);
     Color top = pressed ? FRAME_BOTTOM : WHITE;
     Color bottom = pressed ? FRAME_TOP : FRAME_BOTTOM;
-    if (lit) {
-        top = pressed ? (Color) { 40, 100, 180, 255 } : (Color) { 150, 200, 255, 255 };
-        bottom = pressed ? (Color) { 150, 200, 255, 255 } : (Color) { 40, 100, 180, 255 };
-    }
     DrawRectangleRounded(face, round, 12, bottom);
     DrawRectangleRounded((Rectangle) { face.x, face.y, face.width, face.height * 0.55f }, round, 12, ColorLerp(top, bottom, 0.3f));
-    DrawRectangleRounded((Rectangle) { face.x + 4.0f, face.y + 1.0f, face.width - 8.0f, face.height * 0.4f }, round, 12, Fade(WHITE, pressed ? 0.1f : 0.45f));
-}
-
-static void drawSeek(const WatchView* view)
-{
-    insetPanel(SEEK, (Color) { 40, 48, 64, 255 });
-    float fraction = (view->seconds + view->tenths / 10.0f) / 60.0f;
-    if (view->mode == ALARM_MODE || view->mode == TIMESET_MODE) {
-        fraction = (view->hours * 60 + view->minutes) / 1440.0f;
-    }
-    DrawRectangleRec((Rectangle) { SEEK.x + 2.0f, SEEK.y + 3.0f, (SEEK.width - 4.0f) * fraction, 4.0f }, Fade(LCD_GLOW, 0.7f));
-    Rectangle thumb = { SEEK.x + (SEEK.width - 34.0f) * fraction, SEEK.y - 4.0f, 34.0f, 18.0f };
-    capsule(thumb, false, false);
-    for (int i = -1; i <= 1; i++) {
-        DrawLineEx((Vector2) { thumb.x + 17.0f + 4.0f * i, thumb.y + 5.0f }, (Vector2) { thumb.x + 17.0f + 4.0f * i, thumb.y + 13.0f }, 1.0f, BEVEL_DARK);
+    DrawRectangleRounded((Rectangle) { face.x + 6.0f, face.y + 2.0f, face.width - 12.0f, face.height * 0.35f }, round, 12, Fade(WHITE, pressed ? 0.1f : 0.45f));
+    if (hovered) {
+        DrawRectangleRoundedLinesEx(Gui_Inset(r, -1.0f), round, 12, 2.0f, Fade(LCD_GLOW, 0.9f));
     }
 }
 
-static void deckGlyph(enum GuiButton button, Vector2 c, Color color, const WatchView* view)
+static void modeGlyph(enum GuiButton button, Vector2 c, Color color)
 {
     switch (button) {
-    case GB_MINUS:
-        DrawTriangle((Vector2) { c.x - 1.0f, c.y - 8.0f }, (Vector2) { c.x - 13.0f, c.y }, (Vector2) { c.x - 1.0f, c.y + 8.0f }, color);
-        DrawTriangle((Vector2) { c.x + 11.0f, c.y - 8.0f }, (Vector2) { c.x - 1.0f, c.y }, (Vector2) { c.x + 11.0f, c.y + 8.0f }, color);
-        break;
-    case GB_PLUS:
-        DrawTriangle((Vector2) { c.x - 11.0f, c.y - 8.0f }, (Vector2) { c.x - 11.0f, c.y + 8.0f }, (Vector2) { c.x + 1.0f, c.y }, color);
-        DrawTriangle((Vector2) { c.x + 1.0f, c.y - 8.0f }, (Vector2) { c.x + 1.0f, c.y + 8.0f }, (Vector2) { c.x + 13.0f, c.y }, color);
-        break;
-    case GB_STOPWATCH:
-        if (view->mode == STOPWATCH_MODE && view->stopwatchRunning) {
-            DrawRectangleRec((Rectangle) { c.x - 8.0f, c.y - 8.0f, 5.0f, 16.0f }, color);
-            DrawRectangleRec((Rectangle) { c.x + 3.0f, c.y - 8.0f, 5.0f, 16.0f }, color);
-        } else {
-            DrawTriangle((Vector2) { c.x - 6.0f, c.y - 9.0f }, (Vector2) { c.x - 6.0f, c.y + 9.0f }, (Vector2) { c.x + 9.0f, c.y }, color);
-        }
-        break;
     case GB_CLOCK:
-        DrawRing(c, 8.0f, 10.0f, 0.0f, 360.0f, 24, color);
-        DrawLineEx(c, (Vector2) { c.x, c.y - 6.0f }, 2.0f, color);
-        DrawLineEx(c, (Vector2) { c.x + 5.0f, c.y }, 2.0f, color);
+        DrawRing(c, 10.0f, 13.0f, 0.0f, 360.0f, 32, color);
+        DrawLineEx(c, (Vector2) { c.x, c.y - 8.0f }, 2.5f, color);
+        DrawLineEx(c, (Vector2) { c.x + 6.0f, c.y }, 2.5f, color);
         break;
     case GB_ALARM:
-        DrawCircleSector((Vector2) { c.x, c.y + 3.0f }, 9.0f, 180.0f, 360.0f, 16, color);
-        DrawRectangleRec((Rectangle) { c.x - 11.0f, c.y + 2.0f, 22.0f, 3.0f }, color);
-        DrawCircleV((Vector2) { c.x, c.y + 8.0f }, 2.5f, color);
+        DrawCircleSector((Vector2) { c.x, c.y + 4.0f }, 12.0f, 180.0f, 360.0f, 24, color);
+        DrawRectangleRec((Rectangle) { c.x - 14.0f, c.y + 3.0f, 28.0f, 4.0f }, color);
+        DrawCircleV((Vector2) { c.x, c.y + 10.0f }, 3.0f, color);
+        break;
+    case GB_STOPWATCH:
+        DrawRing((Vector2) { c.x, c.y + 2.0f }, 9.0f, 12.0f, 0.0f, 360.0f, 32, color);
+        DrawRectangleRec((Rectangle) { c.x - 4.0f, c.y - 14.0f, 8.0f, 4.0f }, color);
+        DrawLineEx((Vector2) { c.x, c.y + 2.0f }, (Vector2) { c.x + 4.0f, c.y - 4.0f }, 2.5f, color);
         break;
     case GB_TIMESET:
-        DrawRectangleRec((Rectangle) { c.x - 9.0f, c.y - 9.0f, 18.0f, 18.0f }, color);
+        for (int i = 0; i < 3; i++) {
+            float y = c.y - 9.0f + 9.0f * i;
+            DrawLineEx((Vector2) { c.x - 13.0f, y }, (Vector2) { c.x + 13.0f, y }, 2.0f, color);
+            DrawCircleV((Vector2) { c.x - 7.0f + 7.0f * ((i * 2) % 3), y }, 4.0f, color);
+        }
         break;
     default:
         break;
     }
 }
 
-static void drawDeck(const WatchView* view, const GuiLayout* layout, const GuiInput* input)
+/* Circular bevel-edged transport button; `lit` gives it the blue accent. Returns its centre. */
+static Vector2 roundButton(Rectangle r, bool pressed, bool lit, bool hovered)
 {
-    const GuiFonts* fonts = Gui_Fonts();
-    const char* captions[6] = { "-", "CLOCK", "ALARM", "STOPW", "SET", "+" };
+    float radius = r.width / 2.0f;
+    Vector2 c = { r.x + radius, r.y + radius };
 
-    for (int i = 0; i < 6; i++) {
-        enum GuiButton id = DECK[i];
-        Rectangle r = layout->buttons[id];
-        Vector2 c = { r.x + r.width / 2.0f, r.y + r.height / 2.0f };
-        bool pressed = input->pressed[id];
-        bool active = (id == GB_CLOCK && view->mode == CLOCK_MODE)
-            || (id == GB_ALARM && view->mode == ALARM_MODE)
-            || (id == GB_STOPWATCH && view->mode == STOPWATCH_MODE)
-            || (id == GB_TIMESET && view->mode == TIMESET_MODE);
-
-        DrawCircleV((Vector2) { c.x + 1.0f, c.y + 2.0f }, 28.0f, Fade(BLACK, 0.35f));
-        DrawCircleV(c, 28.0f, BEVEL_DARK);
-        Color top = pressed ? FRAME_BOTTOM : WHITE;
-        Color bottom = pressed ? WHITE : FRAME_BOTTOM;
-        if (active) {
-            top = pressed ? (Color) { 30, 80, 160, 255 } : (Color) { 170, 215, 255, 255 };
-            bottom = pressed ? (Color) { 170, 215, 255, 255 } : (Color) { 30, 90, 180, 255 };
-        }
-        DrawCircleGradient((int)c.x, (int)(c.y - 8.0f), 34.0f, top, bottom);
-        DrawRing(c, 27.0f, 29.0f, 0.0f, 360.0f, 48, BEVEL_DARK);
-        DrawRing(c, 22.0f, 23.0f, 200.0f, 340.0f, 24, Fade(WHITE, 0.7f));
-        if (input->hovered[id]) {
-            DrawRing(c, 29.0f, 31.0f, 0.0f, 360.0f, 48, Fade(LCD_GLOW, 0.8f));
-        }
-        deckGlyph(id, pressed ? (Vector2) { c.x + 1.0f, c.y + 1.0f } : c, active ? WHITE : INK, view);
-
-        Gui_TextCentered(fonts->uiSmall, captions[i], (Rectangle) { r.x - 6.0f, r.y + r.height + 4.0f, r.width + 12.0f, 14.0f }, 14.0f, 0.0f, INK);
+    DrawCircleV((Vector2) { c.x + 1.0f, c.y + 3.0f }, radius, Fade(BLACK, 0.3f));
+    Color top = pressed ? FRAME_BOTTOM : WHITE;
+    Color bottom = pressed ? WHITE : FRAME_BOTTOM;
+    if (lit) {
+        top = pressed ? (Color) { 30, 80, 160, 255 } : (Color) { 170, 215, 255, 255 };
+        bottom = pressed ? (Color) { 170, 215, 255, 255 } : (Color) { 30, 90, 180, 255 };
     }
-}
-
-static void drawAlarmSlider(const WatchView* view)
-{
-    const GuiFonts* fonts = Gui_Fonts();
-    Gui_TextLeft(fonts->uiSmall, "ALARM", (Vector2) { 20.0f, 386.0f }, 14.0f, 0.0f, INK);
-    Rectangle track = { 70.0f, 391.0f, 250.0f, 6.0f };
-    insetPanel(track, (Color) { 40, 48, 64, 255 });
-    for (int i = 0; i <= 24; i += 3) {
-        float tx = track.x + track.width * i / 24.0f;
-        DrawLineEx((Vector2) { tx, track.y + 9.0f }, (Vector2) { tx, track.y + 13.0f }, 1.0f, BEVEL_DARK);
-    }
-    float fraction = (view->alarmHours * 60 + view->alarmMinutes) / 1440.0f;
-    capsule((Rectangle) { track.x + (track.width - 22.0f) * fraction, track.y - 6.0f, 22.0f, 18.0f }, false, view->alarmState != ALARM_OFF);
-
-    /* lightning toggle: lit while the alarm is armed or ringing */
-    Rectangle bolt = { 336.0f, 382.0f, 30.0f, 22.0f };
-    capsule(bolt, false, view->alarmState != ALARM_OFF);
-    Vector2 b = { bolt.x + 15.0f, bolt.y + 11.0f };
-    Color boltColor = view->alarmState != ALARM_OFF ? WHITE : INK;
-    DrawTriangle((Vector2) { b.x + 2.0f, b.y - 8.0f }, (Vector2) { b.x - 5.0f, b.y + 1.0f }, (Vector2) { b.x + 1.0f, b.y + 1.0f }, boltColor);
-    DrawTriangle((Vector2) { b.x - 1.0f, b.y - 1.0f }, (Vector2) { b.x - 2.0f, b.y + 8.0f }, (Vector2) { b.x + 5.0f, b.y - 1.0f }, boltColor);
-
-    Gui_TextLeft(fonts->uiSmall, view->stopwatchRunning ? "RUN" : "STOP", (Vector2) { 378.0f, 386.0f }, 14.0f, 0.0f, INK);
-}
-
-static void drawEqualizer(const WatchView* view)
-{
-    const GuiFonts* fonts = Gui_Fonts();
-    DrawRectangleRec(EQ, Fade(WHITE, 0.12f));
-    bevel(EQ, false);
-
-    Rectangle title = { EQ.x + 1.0f, EQ.y + 1.0f, EQ.width - 2.0f, 18.0f };
-    DrawRectangleGradientV((int)title.x, (int)title.y, (int)title.width, (int)title.height, TITLE_TOP, TITLE_BOTTOM);
-    Gui_TextCentered(fonts->uiSmall, "EQUALIZER", title, 14.0f, 2.0f, WHITE);
-
-    capsule((Rectangle) { EQ.x + 10.0f, EQ.y + 26.0f, 38.0f, 18.0f }, false, true);
-    Gui_TextCentered(fonts->uiSmall, "ON", (Rectangle) { EQ.x + 10.0f, EQ.y + 26.0f, 38.0f, 18.0f }, 14.0f, 0.0f, WHITE);
-    capsule((Rectangle) { EQ.x + 54.0f, EQ.y + 26.0f, 50.0f, 18.0f }, false, false);
-    Gui_TextCentered(fonts->uiSmall, "AUTO", (Rectangle) { EQ.x + 54.0f, EQ.y + 26.0f, 50.0f, 18.0f }, 14.0f, 0.0f, INK);
-    capsule((Rectangle) { EQ.x + EQ.width - 80.0f, EQ.y + 26.0f, 70.0f, 18.0f }, false, false);
-    Gui_TextCentered(fonts->uiSmall, "PRESETS", (Rectangle) { EQ.x + EQ.width - 80.0f, EQ.y + 26.0f, 70.0f, 18.0f }, 14.0f, 0.0f, INK);
-
-    /* Gain curve graph */
-    Rectangle graph = { EQ.x + 112.0f, EQ.y + 24.0f, 210.0f, 22.0f };
-    insetPanel(graph, LCD_BG);
-    DrawLineEx((Vector2) { graph.x, graph.y + graph.height / 2.0f }, (Vector2) { graph.x + graph.width, graph.y + graph.height / 2.0f }, 1.0f, Fade(LCD_GLOW, 0.25f));
-
-    static const char* const bands[11] = { "PRE", "60", "170", "310", "600", "1K", "3K", "6K", "12K", "14K", "16K" };
-    Vector2 prev = { 0 };
-    for (int i = 0; i < 11; i++) {
-        float x = EQ.x + 24.0f + i * 33.0f;
-        float top = EQ.y + 60.0f, height = 84.0f;
-        float level = i == 0 ? 0.5f : bandLevel(view, i * 2, 0.35f);
-        insetPanel((Rectangle) { x - 2.0f, top, 4.0f, height }, (Color) { 40, 48, 64, 255 });
-        float ky = top + (1.0f - level) * (height - 12.0f);
-        capsule((Rectangle) { x - 9.0f, ky, 18.0f, 12.0f }, false, i == 0);
-        Gui_TextCentered(fonts->uiSmall, bands[i], (Rectangle) { x - 16.0f, top + height + 4.0f, 32.0f, 14.0f }, 14.0f, 0.0f, INK);
-
-        if (i > 0) {
-            Vector2 p = { graph.x + 6.0f + (i - 1) * (graph.width - 12.0f) / 9.0f, graph.y + 3.0f + (1.0f - level) * (graph.height - 6.0f) };
-            if (i > 1) {
-                DrawLineEx(prev, p, 1.5f, LCD_GLOW);
-            }
-            prev = p;
-        }
-    }
-    Gui_TextLeft(fonts->uiSmall, "+12", (Vector2) { EQ.x + EQ.width - 30.0f, EQ.y + 58.0f }, 14.0f, 0.0f, INK);
-    Gui_TextLeft(fonts->uiSmall, "0", (Vector2) { EQ.x + EQ.width - 22.0f, EQ.y + 94.0f }, 14.0f, 0.0f, INK);
-    Gui_TextLeft(fonts->uiSmall, "-12", (Vector2) { EQ.x + EQ.width - 30.0f, EQ.y + 130.0f }, 14.0f, 0.0f, INK);
-}
-
-static void tab(Rectangle r, const char* text, bool selected, bool hovered)
-{
-    const GuiFonts* fonts = Gui_Fonts();
-    Color top = selected ? WHITE : FRAME_TOP;
-    Color bottom = selected ? FRAME_TOP : FRAME_BOTTOM;
+    DrawCircleV(c, radius, bottom);
+    DrawCircleGradient((int)c.x, (int)(c.y - radius * 0.35f), radius * 0.8f, top, Fade(top, 0.0f));
+    DrawRing(c, radius - 1.5f, radius, 0.0f, 360.0f, 64, BEVEL_DARK);
+    DrawRing(c, radius - 7.0f, radius - 6.0f, 200.0f, 340.0f, 32, Fade(WHITE, 0.7f));
     if (hovered) {
-        top = (Color) { 190, 225, 255, 255 };
+        DrawRing(c, radius + 1.0f, radius + 3.0f, 0.0f, 360.0f, 64, Fade(LCD_GLOW, 0.9f));
     }
-    DrawRectangleGradientV((int)r.x, (int)r.y, (int)r.width, (int)r.height, top, bottom);
-    bevel(r, false);
-    Gui_TextCentered(fonts->uiSmall, text, r, 14.0f, 0.0f, INK);
+    return pressed ? (Vector2) { c.x + 1.0f, c.y + 1.0f } : c;
+}
+
+static void drawModeButtons(const WatchView* view, const GuiLayout* layout, const GuiInput* input)
+{
+    const GuiFonts* fonts = Gui_Fonts();
+
+    for (int i = 0; i < 4; i++) {
+        enum GuiButton id = MODES[i];
+        Rectangle r = layout->buttons[id];
+        bool active = modeActive(id, view);
+        Vector2 c = roundButton(r, input->pressed[id], active, input->hovered[id]);
+        modeGlyph(id, c, active ? WHITE : INK);
+
+        Gui_TextCentered(fonts->uiSmall, Gui_ButtonLabel(id, view), (Rectangle) { r.x - 10.0f, r.y + r.height + 8.0f, r.width + 20.0f, 14.0f }, 14.0f, 0.0f, INK);
+    }
+}
+
+static void drawTransportButtons(const WatchView* view, const GuiLayout* layout, const GuiInput* input)
+{
+    const GuiFonts* fonts = Gui_Fonts();
+    enum GuiButton ids[2] = { GB_PLUS, GB_MINUS };
+
+    for (int i = 0; i < 2; i++) {
+        enum GuiButton id = ids[i];
+        Rectangle r = layout->buttons[id];
+        bool lit = id == GB_PLUS && view->stopwatchRunning;
+        Vector2 c = roundButton(r, input->pressed[id], lit, input->hovered[id]);
+        Gui_AdjustIcon(id, view, c, 14.0f, 6.0f, lit ? WHITE : INK);
+
+        const char* label = id == GB_PLUS ? (view->stopwatchRunning ? "PAUSE" : "PLAY") : "RESET";
+        Gui_TextCentered(fonts->uiSmall, label, (Rectangle) { r.x - 10.0f, r.y + r.height + 8.0f, r.width + 20.0f, 14.0f }, 14.0f, 0.0f, INK);
+    }
+}
+
+static void drawAdjustButtons(const WatchView* view, const GuiLayout* layout, const GuiInput* input)
+{
+    const GuiFonts* fonts = Gui_Fonts();
+    enum GuiButton ids[2] = { GB_MINUS, GB_PLUS };
+
+    for (int i = 0; i < 2; i++) {
+        enum GuiButton id = ids[i];
+        Rectangle r = layout->buttons[id];
+        bool pressed = input->pressed[id];
+        capsule(r, pressed, input->hovered[id]);
+
+        float shift = pressed ? 1.0f : 0.0f;
+        Vector2 c = { r.x + 44.0f + shift, r.y + r.height / 2.0f + shift };
+        Gui_AdjustIcon(id, view, c, 14.0f, 6.0f, INK);
+
+        const char* label;
+        if (view->mode == STOPWATCH_MODE) {
+            label = id == GB_PLUS ? (view->stopwatchRunning ? "STOP" : "START") : "RESET";
+        } else {
+            label = id == GB_PLUS ? "INCREASE" : "DECREASE";
+        }
+        Vector2 size = MeasureTextEx(fonts->uiBold, label, 17.0f, 1.0f);
+        Gui_TextLeft(fonts->uiBold, label, (Vector2) { c.x + 34.0f, c.y - size.y / 2.0f }, 17.0f, 1.0f, INK);
+    }
+}
+
+static void drawThemeButton(const WatchView* view, const GuiLayout* layout, const GuiInput* input)
+{
+    const GuiFonts* fonts = Gui_Fonts();
+    Rectangle r = layout->buttons[GB_THEME];
+    capsule(r, input->pressed[GB_THEME] || input->menuOpen, input->hovered[GB_THEME]);
+    Gui_TextCentered(fonts->uiSmall, Gui_ButtonLabel(GB_THEME, view), r, 14.0f, 0.0f, INK);
 }
 
 static void drawMenu(const GuiLayout* layout, const GuiInput* input)
@@ -419,14 +342,13 @@ static void draw(const WatchView* view, const GuiLayout* layout, const GuiInput*
     drawFrame();
     drawTitleBar();
     drawLcd(view);
-    drawSeek(view);
-    drawDeck(view, layout, input);
-    drawAlarmSlider(view);
-    drawEqualizer(view);
-
-    tab((Rectangle) { 14.0f, 604.0f, 130.0f, 26.0f }, "EQUALIZER", true, false);
-    tab((Rectangle) { 150.0f, 604.0f, 136.0f, 26.0f }, "OPTIONS", false, false);
-    tab(layout->buttons[GB_THEME], Gui_ButtonLabel(GB_THEME, view), input->menuOpen || input->pressed[GB_THEME], input->hovered[GB_THEME]);
+    drawModeButtons(view, layout, input);
+    if (view->mode == STOPWATCH_MODE) {
+        drawTransportButtons(view, layout, input);
+    } else if (Gui_ButtonAvailable(GB_PLUS, view->mode)) {
+        drawAdjustButtons(view, layout, input);
+    }
+    drawThemeButton(view, layout, input);
 
     if (input->menuOpen) {
         drawMenu(layout, input);
