@@ -68,8 +68,8 @@ static void layout(GuiLayout* out, int themeCount, enum EWatchMode mode)
     out->buttons[GB_TIMESET] = (Rectangle) { MARGIN + cellW + GAP, gridY + cellH + GAP, cellW, cellH };
 
     float padY = gridY + 2.0f * (cellH + GAP);
-    out->buttons[GB_MINUS] = (Rectangle) { MARGIN, padY, cellW, cellH };
-    out->buttons[GB_PLUS] = (Rectangle) { MARGIN + cellW + GAP, padY, cellW, cellH };
+    out->buttons[GB_PLUS] = (Rectangle) { MARGIN, padY, cellW, cellH };
+    out->buttons[GB_MINUS] = (Rectangle) { MARGIN + cellW + GAP, padY, cellW, cellH };
 
     out->buttons[GB_THEME] = (Rectangle) { GUI_SCREEN_WIDTH - MARGIN - 144.0f, 20.0f, 144.0f, 38.0f };
 
@@ -292,10 +292,7 @@ static void drawAdjustButton(enum GuiButton button, const WatchView* view, const
 
     Vector2 c = { r.x + 48.0f, r.y + r.height / 2.0f };
     DrawCircleV(c, 22.0f, Fade(accent, 0.14f));
-    DrawRectangleRounded((Rectangle) { c.x - 10.0f, c.y - 2.0f, 20.0f, 4.0f }, 1.0f, 6, accent);
-    if (button == GB_PLUS) {
-        DrawRectangleRounded((Rectangle) { c.x - 2.0f, c.y - 10.0f, 4.0f, 20.0f }, 1.0f, 6, accent);
-    }
+    Gui_AdjustIcon(button, view, c, 10.0f, 4.0f, accent);
 
     const char* label;
     if (view->mode == STOPWATCH_MODE) {
@@ -368,8 +365,10 @@ static void draw(const WatchView* view, const GuiLayout* layout, const GuiInput*
     drawModeCell(GB_ALARM, view, layout, input);
     drawModeCell(GB_STOPWATCH, view, layout, input);
     drawModeCell(GB_TIMESET, view, layout, input);
-    drawAdjustButton(GB_MINUS, view, layout, input, accent);
-    drawAdjustButton(GB_PLUS, view, layout, input, accent);
+    if (Gui_ButtonAvailable(GB_PLUS, view->mode)) {
+        drawAdjustButton(GB_MINUS, view, layout, input, accent);
+        drawAdjustButton(GB_PLUS, view, layout, input, accent);
+    }
 
     if (input->menuOpen) {
         drawMenu(layout, input);
